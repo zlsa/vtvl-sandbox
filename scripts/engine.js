@@ -106,7 +106,7 @@ var Engine = Obj.extend(function(base) {
         },
 
         opacity: {
-          value: [0.001, 0.01, 0.002, 0.0005, 0]
+          value: [0.01, 0.1, 0.02, 0.005, 0]
         },
         
         size: {

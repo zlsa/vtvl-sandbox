@@ -12,7 +12,8 @@ var Renderer = Fiber.extend(function() {
       //
       this.camera = this.new_camera();
 
-      this.camera.position.z = 5;
+      this.camera.position.z = 1.7;
+      this.camera.position.x = -10;
       this.camera.position.y = -30;
       this.camera.up.set(0, 0, 1);
       //
@@ -60,16 +61,26 @@ var Renderer = Fiber.extend(function() {
 
     resize: function(size) {
       this.renderer.setSize(size[0], size[1]);
-
+      
       for(var i=0; i<this.cameras.length; i++) {
         var camera = this.cameras[i];
-        camera.setLens(35, 35);
         camera.aspect = size[0]/size[1];
         camera.updateProjectionMatrix();
       }
+      
     },
 
     tick: function(elapsed) {
+      var distance = this.camera.position.distanceTo(this.game.vehicle.body.position);
+      var size = 30;
+      var fov = degrees(Math.atan2(size, distance));
+      
+      this.camera.fov = fov;
+      
+      for(var i=0; i<this.cameras.length; i++) {
+        this.cameras[i].updateProjectionMatrix();
+      }
+      
       this.camera.lookAt(this.game.vehicle.body.position);
       this.renderer.render(this.scene, this.camera);
     }

@@ -18,6 +18,10 @@ function radians(deg) {
   return deg * Math.PI / 180;
 }
 
+function degrees(rad) {
+  return rad / Math.PI * 180;
+}
+
 function lerp(il, i, ih, ol, oh) {
   return ol + (oh - ol) * (i - il) / (ih - il);
 }
