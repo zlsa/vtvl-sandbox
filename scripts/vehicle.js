@@ -10,6 +10,19 @@ var Vehicle = Obj.extend(function(base) {
       base.init.apply(this, arguments);
       
       this.init_engines();
+      this.init_autopilot();
+    },
+
+    init_autopilot: function() {
+      this.autopilot = new Autopilot(this.game, this);
+    },
+
+    set_gimbal: function(gimbal) {
+      this.engine.gimbal = gimbal;
+    },
+
+    set_throttle: function(throttle) {
+      this.engine.throttle = throttle;
     },
 
     get_mass: function() {
@@ -41,7 +54,7 @@ var Vehicle = Obj.extend(function(base) {
         shape: shape
       });
 
-      this.body.position.set(0, 0, 8);
+      this.body.position.set(0, 0, 7.3);
       
       this.set_material(this.world.get_material('tank'));
     },
@@ -67,6 +80,8 @@ var Vehicle = Obj.extend(function(base) {
     },
 
     tick: function(elapsed) {
+      this.autopilot.tick();
+      
       base.tick.call(this, elapsed);
 
       this.body.mass = this.get_mass();

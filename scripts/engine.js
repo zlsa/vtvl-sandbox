@@ -6,9 +6,14 @@ var Engine = Obj.extend(function(base) {
       this.model_url = 'vehicles/new-shepard/be-3.json';
       this.vehicle = null;
 
-      this.throttle = 1;
+      this.throttle = 0;
+      this.throttle_range = [0.4, 1];
+      
       this.max_thrust = 490000;
       this.gimbal = [0, 0];
+
+      this.restarts = 3;
+      this.started = false;
 
       this.flame = null;
 
@@ -17,10 +22,26 @@ var Engine = Obj.extend(function(base) {
       base.init.apply(this, arguments);
 
       var engine = this;
-      this.game.get_loader().load_texture('/images/flame.png', function(texture) {
+      this.game.get_loader().load_texture('images/flame.png', function(texture) {
         engine.flame = texture;
         engine.init_particles.call(engine);
       });
+    },
+
+    start: function() {
+      if(this.restarts <= 0) return;
+      if(this.is_running()) return;
+      this.restarts -= 1;
+      this.started = true;
+    },
+
+    stop: function() {
+      if(!this.is_running()) return;
+      this.started = false;
+    },
+
+    is_running: function() {
+      return this.started;
     },
 
     add_to_scene: function(scene) {
@@ -54,8 +75,8 @@ var Engine = Obj.extend(function(base) {
 
       this.particle.emitter = new SPE.Emitter({
         maxAge: {
-          value: 0.4,
-          spread: 0.2
+          value: 0.3,
+          spread: 0.03
         },
         position: {
           value: new THREE.Vector3(0, -0.6, 0),
@@ -68,20 +89,20 @@ var Engine = Obj.extend(function(base) {
         },
 
         velocity: {
-          value: new THREE.Vector3(0, -30, 0),
+          value: new THREE.Vector3(0, -120, 0),
           spread: new THREE.Vector3(10, 10, 10)
         },
 
         color: {
-          value: [ new THREE.Color(0xffccaa), new THREE.Color(0xaa33aa) ]
+          value: [ new THREE.Color(0xffcc44), new THREE.Color(0xaa3300) ]
         },
 
         opacity: {
-          value: [0.3, 0.02, 0]
+          value: [0.0, 0.03, 0.003, 0.001, 0]
         },
         
         size: {
-          value: [1.0, 5.0],
+          value: [2, 6.0, 9.0],
           spread: 1
         },
 
@@ -123,7 +144,9 @@ var Engine = Obj.extend(function(base) {
     clamp_values: function() {
       this.gimbal[0] = clamp(-1, this.gimbal[0], 1);
       this.gimbal[1] = clamp(-1, this.gimbal[1], 1);
-      this.throttle = clamp(0, this.throttle, 1);
+      this.throttle = clamp(this.throttle_range[0], this.throttle, this.throttle_range[1]);
+      
+      if(!this.is_running()) this.throttle = 0;
     },
 
     apply_force: function() {
@@ -138,13 +161,15 @@ var Engine = Obj.extend(function(base) {
     },
 
     tick: function(elapsed) {
-      this.particle.group.tick(elapsed);
-      
-      this.gimbal[0] = Math.sin(this.game.get_time() * 10);
-      this.gimbal[1] = Math.sin(this.game.get_time() * 5);
       this.clamp_values();
       
       this.apply_force();
+
+      this.particle.emitter.activeMultiplier = this.throttle;
+
+      var steps = 5;
+      for(var i=0; i<steps; i++)
+        this.particle.group.tick(elapsed / steps);
 
       this.mesh.rotation.x = -this.gimbal[1] * this.max_gimbal;
       this.mesh.rotation.z = -this.gimbal[0] * this.max_gimbal;
