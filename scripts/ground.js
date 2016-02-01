@@ -24,9 +24,9 @@ var Ground = Fiber.extend(function() {
     },
 
     init_render: function() {
-      var geometry = new THREE.PlaneGeometry(1000, 1000);
+      var geometry = new THREE.PlaneGeometry(10000, 10000);
       var material = new THREE.MeshPhongMaterial({
-        color: 0x008800
+        color: 0x886633
       });
       this.mesh = new THREE.Mesh(geometry, material);
       this.mesh.receiveShadow = true;

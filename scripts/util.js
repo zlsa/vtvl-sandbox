@@ -17,3 +17,12 @@ function clamp(a, n, b) {
 function radians(deg) {
   return deg * Math.PI / 180;
 }
+
+function lerp(il, i, ih, ol, oh) {
+  return ol + (oh - ol) * (i - il) / (ih - il);
+}
+
+function clerp(il, i, ih, ol, oh) {
+  return clamp(ol,  lerp(il, i, ih, ol, oh), oh);
+}
+

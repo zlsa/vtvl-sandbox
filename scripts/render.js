@@ -7,8 +7,10 @@ var Renderer = Fiber.extend(function() {
 
       this.scene = new THREE.Scene();
 
+      this.cameras = [];
+
       //
-      this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      this.camera = this.new_camera();
 
       this.camera.position.z = 5;
       this.camera.position.y = -30;
@@ -28,6 +30,12 @@ var Renderer = Fiber.extend(function() {
       this.init_hemi();
       
       $('#canvas').append(this.renderer.domElement);
+    },
+
+    new_camera: function() {
+      var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      this.cameras.push(camera);
+      return camera;
     },
 
     init_sun: function() {
@@ -53,14 +61,17 @@ var Renderer = Fiber.extend(function() {
     resize: function(size) {
       this.renderer.setSize(size[0], size[1]);
 
-      this.camera.setLens(35, 35);
-      this.camera.aspect = size[0]/size[1];
-      this.camera.updateProjectionMatrix();
+      for(var i=0; i<this.cameras.length; i++) {
+        var camera = this.cameras[i];
+        camera.setLens(35, 35);
+        camera.aspect = size[0]/size[1];
+        camera.updateProjectionMatrix();
+      }
     },
 
     tick: function(elapsed) {
       this.camera.lookAt(this.game.vehicle.body.position);
-      this.renderer.render(this.scene, this.camera);
+      this.renderer.render(this.scene, this.game.vehicle.camera);
     }
 
   }

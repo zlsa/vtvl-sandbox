@@ -11,6 +11,17 @@ var Vehicle = Obj.extend(function(base) {
       
       this.init_engines();
       this.init_autopilot();
+      this.init_camera();
+    },
+
+    init_camera: function() {
+      this.camera = this.game.renderer.new_camera();
+
+      this.camera.position.z = 20;
+      this.camera.position.y = -10;
+      this.camera.rotation.x = Math.PI * 0.1;
+
+      this.object.add(this.camera);
     },
 
     init_autopilot: function() {

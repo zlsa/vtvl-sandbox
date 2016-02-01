@@ -26,6 +26,8 @@ var Engine = Obj.extend(function(base) {
         engine.flame = texture;
         engine.init_particles.call(engine);
       });
+
+      this.init_light();
     },
 
     start: function() {
@@ -61,6 +63,12 @@ var Engine = Obj.extend(function(base) {
       this.set_material(this.world.get_material('nozzle'));
     },
 
+    init_light: function() {
+      this.light = new THREE.PointLight(0xffaa44, 1, 600);
+      this.light.position.set(0, 0, -1);
+      this.object.add(this.light);
+    },
+
     init_particles: function() {
       this.particle = {}
       
@@ -90,15 +98,15 @@ var Engine = Obj.extend(function(base) {
 
         velocity: {
           value: new THREE.Vector3(0, -120, 0),
-          spread: new THREE.Vector3(10, 10, 10)
+          spread: new THREE.Vector3(10, 100, 10)
         },
 
         color: {
-          value: [ new THREE.Color(0xffcc44), new THREE.Color(0xaa3300) ]
+          value: [ new THREE.Color(0xffaa00), new THREE.Color(0xff8800) ]
         },
 
         opacity: {
-          value: [0.0, 0.03, 0.003, 0.001, 0]
+          value: [0.001, 0.01, 0.002, 0.0005, 0]
         },
         
         size: {
@@ -170,6 +178,8 @@ var Engine = Obj.extend(function(base) {
       var steps = 5;
       for(var i=0; i<steps; i++)
         this.particle.group.tick(elapsed / steps);
+      
+      this.light.intensity = clerp(0.6, this.throttle, 1, 0, 1);
 
       this.mesh.rotation.x = -this.gimbal[1] * this.max_gimbal;
       this.mesh.rotation.z = -this.gimbal[0] * this.max_gimbal;
