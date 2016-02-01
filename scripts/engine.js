@@ -110,7 +110,7 @@ var Engine = Obj.extend(function(base) {
         },
         
         size: {
-          value: [2, 6.0, 9.0],
+          value: [2, 8.0, 20.0],
           spread: 1
         },
 
