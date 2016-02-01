@@ -6,6 +6,7 @@ var Loader = Fiber.extend(function() {
       this.game = game;
 
       this.json_model_loader = new THREE.JSONLoader();
+      this.texture_loader = new THREE.TextureLoader();
 //      this.obj_model_loader = new THREE.OBJLoader();
 
       this.total = 0;
@@ -42,15 +43,15 @@ var Loader = Fiber.extend(function() {
 
     //
 
-    load_obj_model: function(url, callback) {
+    load_texture: function(url, callback) {
       this.before_load();
       var loader = this;
-      this.obj_model_loader.load(url, function() {
-        loader.callback_obj_model.call(loader, arguments, callback);
+      this.texture_loader.load(url, function() {
+        loader.callback_texture.call(loader, arguments, callback);
       });
     },
     
-    callback_obj_model: function(args, callback) {
+    callback_texture: function(args, callback) {
       if(callback) {
         callback.apply(callback, args);
       }

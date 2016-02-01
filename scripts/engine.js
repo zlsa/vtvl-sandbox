@@ -10,11 +10,17 @@ var Engine = Obj.extend(function(base) {
       this.max_thrust = 490000;
       this.gimbal = [0, 0];
 
+      this.flame = null;
+
       this.max_gimbal = radians(10);
 
       base.init.apply(this, arguments);
-      
-      this.init_particles();
+
+      var engine = this;
+      this.game.get_loader().load_texture('/images/flame.png', function(texture) {
+        engine.flame = texture;
+        engine.init_particles.call(engine);
+      });
     },
 
     add_to_scene: function(scene) {
@@ -39,7 +45,7 @@ var Engine = Obj.extend(function(base) {
       
       this.particle.group = new SPE.Group({
         texture: {
-          value: THREE.ImageUtils.loadTexture('/images/flame.png')
+          value: this.flame
         },
         maxParticleCount: 4000
       });
