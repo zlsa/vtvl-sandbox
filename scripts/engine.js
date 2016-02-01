@@ -11,8 +11,16 @@ var Engine = Obj.extend(function(base) {
       this.gimbal = [0, 0];
 
       this.max_gimbal = radians(10);
-      
+
       base.init.apply(this, arguments);
+      
+      this.init_particles();
+    },
+
+    add_to_scene: function(scene) {
+      base.add_to_scene.apply(this, arguments);
+      
+      this.mesh.add(this.particle.group.mesh);
     },
 
     init_physics: function() {
@@ -24,6 +32,57 @@ var Engine = Obj.extend(function(base) {
       });
 
       this.set_material(this.world.get_material('nozzle'));
+    },
+
+    init_particles: function() {
+      this.particle = {}
+      
+      this.particle.group = new SPE.Group({
+        texture: {
+          value: THREE.ImageUtils.loadTexture('/images/flame.png')
+        },
+        maxParticleCount: 4000
+      });
+
+      var size = 0.4;
+
+      this.particle.emitter = new SPE.Emitter({
+        maxAge: {
+          value: 0.4,
+          spread: 0.2
+        },
+        position: {
+          value: new THREE.Vector3(0, -0.6, 0),
+          spread: new THREE.Vector3(size, size, size)
+        },
+
+        acceleration: {
+          value: new THREE.Vector3(0, 10, 0),
+          spread: new THREE.Vector3(0, 0, 0)
+        },
+
+        velocity: {
+          value: new THREE.Vector3(0, -30, 0),
+          spread: new THREE.Vector3(10, 10, 10)
+        },
+
+        color: {
+          value: [ new THREE.Color(0xffccaa), new THREE.Color(0xaa33aa) ]
+        },
+
+        opacity: {
+          value: [0.3, 0.02, 0]
+        },
+        
+        size: {
+          value: [1.0, 5.0],
+          spread: 1
+        },
+
+        particleCount: 3000,
+      });
+
+      this.particle.group.addEmitter(this.particle.emitter);
     },
 
     add_to_vehicle: function(vehicle, position) {
@@ -73,8 +132,10 @@ var Engine = Obj.extend(function(base) {
     },
 
     tick: function(elapsed) {
-      this.gimbal[0] = Math.sin(time() * 10);
-      this.gimbal[1] = Math.sin(time() * 5);
+      this.particle.group.tick(elapsed);
+      
+      this.gimbal[0] = Math.sin(this.game.get_time() * 10);
+      this.gimbal[1] = Math.sin(this.game.get_time() * 5);
       this.clamp_values();
       
       this.apply_force();

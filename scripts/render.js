@@ -4,7 +4,7 @@ var Renderer = Fiber.extend(function() {
 
     init: function(game) {
       this.game = game;
-      
+
       this.scene = new THREE.Scene();
 
       //
