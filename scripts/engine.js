@@ -65,7 +65,7 @@ var Engine = Obj.extend(function(base) {
 
     init_light: function() {
       this.light = new THREE.PointLight(0xffaa44, 1, 150);
-      this.light.position.set(0, 0, -1);
+      this.light.position.set(0, 0, -3);
       this.object.add(this.light);
     },
 
@@ -179,7 +179,7 @@ var Engine = Obj.extend(function(base) {
       for(var i=0; i<steps; i++)
         this.particle.group.tick(elapsed / steps);
       
-      this.light.intensity = clerp(0.4, this.throttle, 1, 0, 1);
+      this.light.intensity = clerp(0.4, this.throttle, 1, 0, 2);
       var spread = 0.1;
       this.light.intensity *= clerp(0, perlin.get1d(this.game.get_time() * 6), 1, 1-spread, 1+spread);
 

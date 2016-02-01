@@ -71,7 +71,7 @@ var Renderer = Fiber.extend(function() {
 
     tick: function(elapsed) {
       this.camera.lookAt(this.game.vehicle.body.position);
-      this.renderer.render(this.scene, this.game.vehicle.camera);
+      this.renderer.render(this.scene, this.camera);
     }
 
   }
