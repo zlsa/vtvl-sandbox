@@ -64,7 +64,7 @@ var Engine = Obj.extend(function(base) {
     },
 
     init_light: function() {
-      this.light = new THREE.PointLight(0xffaa44, 1, 600);
+      this.light = new THREE.PointLight(0xffaa44, 1, 150);
       this.light.position.set(0, 0, -1);
       this.object.add(this.light);
     },
@@ -179,7 +179,9 @@ var Engine = Obj.extend(function(base) {
       for(var i=0; i<steps; i++)
         this.particle.group.tick(elapsed / steps);
       
-      this.light.intensity = clerp(0.6, this.throttle, 1, 0, 1);
+      this.light.intensity = clerp(0.4, this.throttle, 1, 0, 1);
+      var spread = 0.1;
+      this.light.intensity *= clerp(0, perlin.get1d(this.game.get_time() * 6), 1, 1-spread, 1+spread);
 
       this.mesh.rotation.x = -this.gimbal[1] * this.max_gimbal;
       this.mesh.rotation.z = -this.gimbal[0] * this.max_gimbal;

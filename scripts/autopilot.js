@@ -12,7 +12,7 @@ var Autopilot = Fiber.extend(function(base) {
 
     tick: function(elapsed) {
       this.vehicle.engine.start();
-      this.vehicle.set_throttle(clerp(-1, Math.sin(time()), 1, 0.8, 1));
+      this.vehicle.set_throttle(1);
       this.vehicle.set_gimbal(this.gimbal);
     }
 

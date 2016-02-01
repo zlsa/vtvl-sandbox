@@ -26,3 +26,5 @@ function clerp(il, i, ih, ol, oh) {
   return clamp(ol,  lerp(il, i, ih, ol, oh), oh);
 }
 
+
+var perlin = Perlin();
