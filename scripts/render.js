@@ -13,8 +13,7 @@ var Renderer = Fiber.extend(function() {
       this.camera = this.new_camera();
 
       this.camera.camera.position.z = 3;
-      this.camera.camera.position.x = -300;
-      this.camera.camera.position.y = -100;
+      this.camera.camera.position.y = -40;
 
       this.scene.add(this.camera.object);
       //

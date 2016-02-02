@@ -5,6 +5,10 @@ var SoundEnvironment = Fiber.extend(function() {
     init: function(game) {
       this.game = game;
 
+      this.master_volume = 1;
+
+      this.sounds = [];
+
       try {
         this.context = new AudioContext();
         this.listener = this.context.listener;
@@ -24,6 +28,14 @@ var SoundEnvironment = Fiber.extend(function() {
 
     set_orientation: function(rot, up) {
       this.listener.setOrientation(rot.x, rot.y, rot.z, up.x, up.y, up.z);
+    },
+
+    tick: function() {
+      if(this.game.is_paused()) this.master_volume = 0;
+      else this.master_volume = 1;
+      for(var i=0; i<this.sounds.length; i++) {
+        this.sounds[i].set_master_volume(this.master_volume);
+      }
     }
 
   }
@@ -36,6 +48,8 @@ var Sound = Fiber.extend(function() {
       this.game = game;
 
       this.env = game.sound;
+
+      this.env.sounds.push(this);
 
       this.url = url;
 
@@ -73,10 +87,12 @@ var Sound = Fiber.extend(function() {
       this.panner = this.env.context.createPanner();
       this.panner.panningModel = 'HRTF';
       this.panner.distanceModel = 'inverse';
-      this.panner.refDistance = 10;
-      this.panner.maxDistance = 500;
+      this.panner.refDistance = 25;
+      this.panner.maxDistance = 1500;
       this.panner.rolloffFactor = 1;
       this.panner.coneInnerAngle = 180;
+      this.panner.coneOuterAngle = 360;
+      this.panner.coneOuterGain = 0.8;
       this.gain.connect(this.panner);
 
       this.panner.connect(this.env.context.destination);
@@ -88,6 +104,10 @@ var Sound = Fiber.extend(function() {
     set_volume: function(vol) {
       vol = clamp(0, vol, 1);
       this.gain.gain.value = vol;
+    },
+
+    set_master_volume: function(volume) {
+      this.set_volume(volume * this.gain.gain.value);
     },
 
     set_position: function(pos) {

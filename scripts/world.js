@@ -53,7 +53,6 @@ var World = Fiber.extend(function() {
     },
 
     tick: function(elapsed) {
-      if(elapsed == 0) return;
       this.world.step(elapsed);
     }
 

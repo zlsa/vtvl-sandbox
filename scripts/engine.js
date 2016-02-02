@@ -125,7 +125,7 @@ var Engine = Obj.extend(function(base) {
       this.sound.set_position(this.object.position);
       this.sound.set_velocity(this.body.velocity);
 
-      var orientation = new THREE.Vector3(0, 1, 0);
+      var orientation = new THREE.Vector3(0, 0, -1);
       orientation.applyQuaternion(this.object.quaternion);
       
       this.sound.set_orientation(orientation, new THREE.Vector3(0, 0, -1));

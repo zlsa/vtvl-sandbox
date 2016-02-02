@@ -31,10 +31,12 @@ var Game = Fiber.extend(function() {
       
       $(window).blur(function() {
         game.focus = false;
+        game.sound.tick();
       });
       
       $(window).focus(function() {
         game.focus = true;
+        game.sound.tick();
       });
     },
 
@@ -82,15 +84,15 @@ var Game = Fiber.extend(function() {
     tick: function(elapsed) {
       elapsed *= this.time_scale;
       
-      if(this.is_paused()) elapsed = 0;
+      if(this.is_paused()) return;
       
       this.time += elapsed;
 
-      if(!this.is_paused())
-        this.world.tick(elapsed);
+      this.world.tick(elapsed);
       for(var i=0; i<this.vehicles.length; i++)
         this.vehicles[i].tick(elapsed);
       this.renderer.tick(elapsed);
+      this.sound.tick();
     }
 
   }
