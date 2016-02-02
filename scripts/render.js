@@ -13,7 +13,8 @@ var Renderer = Fiber.extend(function() {
       this.camera = this.new_camera();
 
       this.camera.camera.position.z = 3;
-      this.camera.camera.position.y = -10;
+      this.camera.camera.position.x = -300;
+      this.camera.camera.position.y = -100;
 
       this.scene.add(this.camera.object);
       //
@@ -96,13 +97,11 @@ var Renderer = Fiber.extend(function() {
 
     tick: function(elapsed) {
       var distance = this.camera.object.position.distanceTo(this.game.vehicles[0].object.position);
-      var size = 20;
+      var size = 30;
       var fov = degrees(Math.atan2(size, distance));
 
       fov = clamp(3, fov);
 
-      this.camera.camera.fov = 40;
-      
       var camera = this.get_active_camera();
       camera.tick(elapsed);
 

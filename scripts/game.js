@@ -24,7 +24,8 @@ var Game = Fiber.extend(function() {
 
       this.vehicles = [];
 
-      this.add_vehicle(new XaeroVehicle(this));
+      var newshepard = new NewShepardVehicle(this);
+      this.add_vehicle(newshepard);
 
       var game = this;
       
@@ -85,7 +86,8 @@ var Game = Fiber.extend(function() {
       
       this.time += elapsed;
 
-      this.world.tick(elapsed);
+      if(!this.is_paused())
+        this.world.tick(elapsed);
       for(var i=0; i<this.vehicles.length; i++)
         this.vehicles[i].tick(elapsed);
       this.renderer.tick(elapsed);

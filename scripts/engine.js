@@ -119,6 +119,18 @@ var Engine = Obj.extend(function(base) {
       base.done.call(this);
     },
 
+    update_sound: function() {
+      this.sound.set_volume(clerp(0, this.throttle, 1, 0, 1));
+      this.sound.set_pitch(clerp(0, this.throttle, 1, 0.3, 1.0));
+      this.sound.set_position(this.object.position);
+      this.sound.set_velocity(this.body.velocity);
+
+      var orientation = new THREE.Vector3(0, 1, 0);
+      orientation.applyQuaternion(this.object.quaternion);
+      
+      this.sound.set_orientation(orientation, new THREE.Vector3(0, 0, -1));
+    },
+
     tick: function(elapsed) {
       this.clamp_values();
       
@@ -140,6 +152,8 @@ var Engine = Obj.extend(function(base) {
       this.light.intensity = clerp(0.4, this.throttle, 1, 0, 1);
       var spread = 0.1;
       this.light.intensity *= clerp(0, perlin.get1d(this.game.get_time() * 6), 1, 1-spread, 1+spread);
+      
+      this.update_sound();
       
       base.tick.call(this, elapsed);
       
@@ -164,6 +178,8 @@ var BE3Engine = Engine.extend(function(base) {
       this.max_gimbal = radians(5);
       
       this.restarts = 3;
+
+      this.sound = new Sound(game, 'vehicles/xaero/audio/running.wav');
 
       base.init.apply(this, arguments);
     },
@@ -258,10 +274,6 @@ var BE3Engine = Engine.extend(function(base) {
       this.object.add(this.mesh);
     },
 
-    tick: function() {
-      base.tick.apply(this, arguments);
-    }
-
   }
 });
 
@@ -350,27 +362,6 @@ var ScimitarEngine = Engine.extend(function(base) {
 
       this.object.add(this.mesh);
     },
-
-    update_sound: function() {
-      this.sound.set_volume(clerp(0, this.throttle, 1, 0, 1.0));
-      this.sound.set_pitch(clerp(0, this.throttle, 1, 0.3, 1.0));
-      this.sound.set_position(this.object.position);
-      this.sound.set_velocity(this.body.velocity);
-
-      var orientation = new THREE.Vector3(0, 1, 0);
-      orientation.applyQuaternion(this.object.quaternion);
-      
-      this.sound.set_orientation(orientation, new THREE.Vector3(0, 0, -1));
-//      this.sound.set_volume(clerp(0, this.throttle, 1, 0, 1.0));
-//      this.sound.set_volume(0);
-    },
-
-    tick: function() {
-      base.tick.apply(this, arguments);
-
-      this.update_sound();
-      
-    }
 
   }
 });

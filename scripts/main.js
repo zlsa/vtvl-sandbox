@@ -35,7 +35,7 @@ function tick() {
   if(last_tick != 0)
     elapsed = now - last_tick;
   
-  elapsed = clamp(0, elapsed, 0.05);
+  elapsed = clamp(0, elapsed, 0.1);
   
   game.tick(elapsed);
 

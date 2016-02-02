@@ -11,6 +11,10 @@ var Vehicle = Obj.extend(function(base) {
       this.init_camera();
     },
 
+    move: function(x, y, z) {
+      this.body.position.set(x, y, z);
+    },
+
     init_camera: function() {
       this.camera = this.game.renderer.new_camera();
 
