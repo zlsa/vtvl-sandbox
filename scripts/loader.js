@@ -7,7 +7,6 @@ var Loader = Fiber.extend(function() {
 
       this.json_model_loader = new THREE.JSONLoader();
       this.texture_loader = new THREE.TextureLoader();
-//      this.obj_model_loader = new THREE.OBJLoader();
 
       this.total = 0;
       this.complete = 0;
@@ -56,7 +55,32 @@ var Loader = Fiber.extend(function() {
         callback.apply(callback, args);
       }
       this.after_load();
-    }
+    },
+
+    load_sound: function(url, env, callback) {
+      this.before_load();
+      
+      var request=new XMLHttpRequest();
+      request.open('GET', url, true);
+      request.responseType = 'arraybuffer';
+
+      var loader = this;
+      request.onload = function() {
+        loader.callback_sound.call(loader, request.response, callback);
+      };
+      request.send();
+    },
+    
+    callback_sound: function(buffer, callback) {
+      var loader = this;
+      if(callback) {
+        callback.call(callback, buffer, function() {
+          loader.after_load.call(loader);
+        });
+      } else {
+        this.after_load();
+      }
+    },
 
   }
 });

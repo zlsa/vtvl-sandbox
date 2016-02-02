@@ -35,10 +35,10 @@ function tick() {
   if(last_tick != 0)
     elapsed = now - last_tick;
   
-  game.tick(elapsed);
-
   elapsed = clamp(0, elapsed, 0.05);
   
+  game.tick(elapsed);
+
   requestAnimationFrame(tick);
 
   last_tick = now;

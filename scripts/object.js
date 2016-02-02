@@ -10,7 +10,7 @@ var Obj = Fiber.extend(function() {
         this.init_physics();
       this.init_render();
     },
-    
+
     init_render: function() {
       this.object = new THREE.Object3D();
       
@@ -38,7 +38,7 @@ var Obj = Fiber.extend(function() {
       this.shadow.shadowDarkness = 0.8;
       this.shadow.shadowMapWidth = shadow_size;
       this.shadow.shadowMapHeight = shadow_size;
-      this.shadow.shadowCameraFov = 0.9;
+      this.shadow.shadowCameraFov = 0.3;
       
       this.shadow.target = this.object;
     },

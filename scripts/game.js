@@ -20,9 +20,11 @@ var Game = Fiber.extend(function() {
       
       this.ground = new Ground(this);
 
+      this.sound = new SoundEnvironment(this);
+
       this.vehicles = [];
 
-      this.add_vehicle(new Vehicle(this));
+      this.add_vehicle(new XaeroVehicle(this));
 
       var game = this;
       
@@ -43,6 +45,10 @@ var Game = Fiber.extend(function() {
       if(this.paused) return true;
       if(!this.focus) return true;
       return false;
+    },
+
+    get_sound: function() {
+      return this.sound;
     },
 
     get_time: function() {

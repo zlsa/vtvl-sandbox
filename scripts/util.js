@@ -33,3 +33,9 @@ function clerp(il, i, ih, ol, oh) {
 
 
 var perlin = Perlin();
+
+function get_global_position(obj) {
+  var vec = obj.position.clone();
+  vec.applyMatrix4(obj.matrixWorld);
+  return vec;
+}

@@ -9,11 +9,9 @@ var PerspectiveCamera = Obj.extend(function(base) {
     },
 
     init_camera: function() {
-      this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.5, 100000);
+      this.camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.5, 100000);
 
-      this.camera.position.z = 20;
-      this.camera.position.y = -10;
-      this.camera.rotation.x = Math.PI * 0.1;
+      this.camera.up.set(0, 0, 1);
 
       this.object.add(this.camera);
     },
@@ -23,6 +21,13 @@ var PerspectiveCamera = Obj.extend(function(base) {
     },
 
     tick: function(elapsed) {
+      var position = get_global_position(this.camera);
+      this.game.get_sound().set_position(position);
+      
+      var orientation = new THREE.Vector3(0, 1, 0);
+      orientation.applyQuaternion(this.camera.quaternion);
+      
+      this.game.get_sound().set_orientation(orientation, new THREE.Vector3(0, 0, 1));
       this.camera.updateProjectionMatrix();
       base.tick.call(this, elapsed);
     }

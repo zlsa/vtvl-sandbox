@@ -11,10 +11,10 @@ var Autopilot = Fiber.extend(function(base) {
     },
 
     tick: function(elapsed) {
-      if(game.get_time() > 0.5) {
+      if(game.get_time() > 1) {
         this.vehicle.engine.start();
-        this.vehicle.set_throttle(1);
       }
+      this.vehicle.set_throttle(clerp(-1, Math.sin(time() * 10), 1, 0.9, 1));
       this.vehicle.set_gimbal(this.gimbal);
     }
 

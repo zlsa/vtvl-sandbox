@@ -12,10 +12,8 @@ var Renderer = Fiber.extend(function() {
       //
       this.camera = this.new_camera();
 
-      this.camera.camera.position.z = 10;
-      this.camera.camera.position.x = -50;
-      this.camera.camera.position.y = -30;
-      this.camera.camera.up.set(0, 0, 1);
+      this.camera.camera.position.z = 3;
+      this.camera.camera.position.y = -10;
 
       this.scene.add(this.camera.object);
       //
@@ -60,11 +58,11 @@ var Renderer = Fiber.extend(function() {
           depthWrite: false
         });
 
-        var skyGeo = new THREE.SphereGeometry(1000, 25, 25);
+        var skyGeo = new THREE.SphereGeometry(50000, 25, 25);
 
-        renderer.sky = new THREE.Mesh(skyGeo, material);
-        renderer.sky.rotation.x = Math.PI * 0.5;
-        renderer.scene.add(renderer.sky);
+        renderer.skydome = new THREE.Mesh(skyGeo, material);
+        renderer.skydome.rotation.x = Math.PI * 0.5;
+        renderer.scene.add(renderer.skydome);
         
       });
     },
@@ -87,34 +85,31 @@ var Renderer = Fiber.extend(function() {
       
       for(var i=0; i<this.cameras.length; i++) {
         this.cameras[i].resize(size);
-//        var camera = this.cameras[i];
-//        camera.aspect = size[0]/size[1];
-//        camera.updateProjectionMatrix();
       }
       
     },
 
     get_active_camera: function() {
-      return this.game.vehicles[0].camera;
+//      return this.game.vehicles[0].camera;
       return this.camera;
     },
 
     tick: function(elapsed) {
-      var distance = this.camera.object.position.distanceTo(this.game.vehicles[0].body.position);
-      var size = 15;
-      var fov = degrees(Math.atan2(size, distance)) * 2;
+      var distance = this.camera.object.position.distanceTo(this.game.vehicles[0].object.position);
+      var size = 20;
+      var fov = degrees(Math.atan2(size, distance));
 
-      fov = clamp(0.5, fov);
+      fov = clamp(3, fov);
 
-//      this.camera.camera.fov = fov;
+      this.camera.camera.fov = 40;
       
-      for(var i=0; i<this.cameras.length; i++) {
-        this.cameras[i].tick();
-      }
-
       var camera = this.get_active_camera();
+      camera.tick(elapsed);
+
+      var position = camera.object.position.clone();
+      position.applyMatrix4(camera.object.matrixWorld);
       
-      this.sky.position.copy(camera.camera.position);
+      this.skydome.position.copy(position);
       
       this.camera.camera.lookAt(this.game.vehicles[0].body.position);
       
