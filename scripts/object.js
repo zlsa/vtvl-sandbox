@@ -5,29 +5,20 @@ var Obj = Fiber.extend(function() {
     init: function(game) {
       this.game = game;
       this.world = this.game.world;
-      
-      this.init_physics();
+
+      if(this.init_physics)
+        this.init_physics();
       this.init_render();
     },
     
-    add_to_world: function(world) {
-      world.add(this.body);
-    },
-
-    add_to_scene: function(scene) {
-      scene.add(this.object);
-    },
-
     init_render: function() {
+      this.object = new THREE.Object3D();
+      
       if(!this.model_url) return;
       var obj = this;
       this.game.get_loader().load_json_model(this.model_url, function() {
         obj.loaded.apply(obj, arguments);
       });
-
-      this.object = new THREE.Object3D();
-
-      this.init_shadow();
     },
 
     init_shadow: function() {
@@ -57,19 +48,27 @@ var Obj = Fiber.extend(function() {
     },
 
     done: function() {
-      this.add_to_world(this.game.get_world());
-      this.add_to_scene(this.game.get_scene());
+      this.game.get_physics_world().add(this.body);
+      this.game.get_render_scene().add(this.object);
+
+      if(this.shadow) {
+        this.game.get_render_scene().add(this.shadow);
+      }
     },
 
     tick: function(elapsed) {
       var spot_distance = 1000;
-      
-      this.shadow.position.copy(this.game.renderer.sun.position);
-      this.shadow.position.setLength(spot_distance);
-      this.shadow.position.add(this.object.position);
-      
-      this.object.position.copy(this.body.position);
-      this.object.quaternion.copy(this.body.quaternion);
+
+      if(this.shadow) {
+        this.shadow.position.copy(this.game.renderer.sun.position);
+        this.shadow.position.setLength(spot_distance);
+        this.shadow.position.add(this.object.position);
+      }
+
+      if(this.body) {
+        this.object.position.copy(this.body.position);
+        this.object.quaternion.copy(this.body.quaternion);
+      }
     }
 
   }

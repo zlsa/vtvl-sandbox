@@ -9,9 +9,8 @@ var World = Fiber.extend(function() {
       this.world.gravity.set(0, 0, -9.82);
       this.world.broadphase = new CANNON.NaiveBroadphase();
 
-      this.world.solver = new CANNON.GSSolver();
-      this.world.solver.iterations = 40;
-      this.world.solver.tolerance = 1e-12;
+      this.world.solver.iterations = 80;
+      this.world.solver.tolerance = 1e-10;
 
       world = this.world;
 
@@ -47,7 +46,7 @@ var World = Fiber.extend(function() {
       var cm = new CANNON.ContactMaterial(this.get_material(a), this.get_material(b), {
         friction: friction,
         restitution: restitution,
-        contactEquationStiffness: 1e50,
+        contactEquationStiffness: 1e100,
         contactEquationRelaxation: 1
       });
       this.world.addContactMaterial(cm);

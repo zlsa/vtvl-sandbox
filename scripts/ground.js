@@ -8,14 +8,16 @@ var Ground = Fiber.extend(function() {
       
       this.init_physics();
       this.init_render();
-    },
+      
+      var ground = this;
+      this.game.get_loader().load_texture('images/grass.jpg', function(texture) {
+        ground.mesh.material.bumpMap = texture;
+        ground.mesh.material.bumpScale = 1;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        
+      });
 
-    add_to_world: function(world) {
-      world.add(this.body);
-    },
-
-    add_to_scene: function(scene) {
-      scene.add(this.mesh);
     },
 
     init_physics: function() {
@@ -24,10 +26,24 @@ var Ground = Fiber.extend(function() {
     },
 
     init_render: function() {
-      var geometry = new THREE.PlaneGeometry(10000, 10000);
+      var size = 10000;
+      var geometry = new THREE.PlaneGeometry(size, size);
       var material = new THREE.MeshPhongMaterial({
-        color: 0x886633
+        color: 0x886633,
+        specular: 0x0,
+        shininess: 0
       });
+
+      for(var i=0; i<geometry.faceVertexUvs.length; i++) {
+        var z = geometry.faceVertexUvs[i];
+        for(var j=0; j<z.length; j++) {
+          for(var k=0; k<z[j].length; k++) {
+            z[j][k].x *= 500;
+            z[j][k].y *= 500;
+          }
+        }
+      }
+      window.g = geometry;
       this.mesh = new THREE.Mesh(geometry, material);
       this.mesh.receiveShadow = true;
     },
@@ -37,8 +53,8 @@ var Ground = Fiber.extend(function() {
     },
 
     done: function() {
-      this.add_to_world(this.game.get_world());
-      this.add_to_scene(this.game.get_scene());
+      this.game.get_physics_world().add(this.body);
+      this.game.get_render_scene().add(this.mesh);
     },
 
     tick: function(elapsed) {

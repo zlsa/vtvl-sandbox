@@ -8,7 +8,8 @@ var Vehicle = Obj.extend(function(base) {
       this.mass = 34000;
       
       base.init.apply(this, arguments);
-      
+
+      this.init_shadow();
       this.init_engines();
       this.init_autopilot();
       this.init_camera();
@@ -17,11 +18,11 @@ var Vehicle = Obj.extend(function(base) {
     init_camera: function() {
       this.camera = this.game.renderer.new_camera();
 
-      this.camera.position.z = 20;
-      this.camera.position.y = -10;
-      this.camera.rotation.x = Math.PI * 0.1;
+      this.camera.camera.position.z = 20;
+      this.camera.camera.position.y = -10;
+      this.camera.camera.rotation.x = Math.PI * 0.1;
 
-      this.object.add(this.camera);
+      this.object.add(this.camera.object);
     },
 
     init_autopilot: function() {
@@ -44,28 +45,15 @@ var Vehicle = Obj.extend(function(base) {
       this.engine = new Engine(this.game);
     },
     
-    add_to_world: function(world) {
-      base.add_to_world.apply(this, arguments);
-      
-      this.engine.add_to_world(world);
-    },
-
-    add_to_scene: function(scene) {
-      base.add_to_scene.apply(this, arguments);
-      
-      this.engine.add_to_scene(scene);
-      scene.add(this.shadow);
-    },
-
     init_physics: function() {
-      var shape = new CANNON.Cylinder(2.0, 1.5, 12, 24);
+      var shape = new CANNON.Cylinder(1.9, 1.45, 12, 24);
       
       this.body = new CANNON.Body({
         mass: this.get_mass(),
         shape: shape
       });
 
-      this.body.position.set(0, 0, 7.3);
+      this.body.position.set(0, 0, 15);
       
       this.set_material(this.world.get_material('tank'));
     },
@@ -87,7 +75,6 @@ var Vehicle = Obj.extend(function(base) {
 
       this.engine.done();
       this.engine.add_to_vehicle(this, new CANNON.Vec3(0, 0, -6.4));
-     
     },
 
     tick: function(elapsed) {
@@ -96,7 +83,7 @@ var Vehicle = Obj.extend(function(base) {
       base.tick.call(this, elapsed);
 
       this.body.mass = this.get_mass();
-      
+
       this.engine.tick(elapsed);
     }
 

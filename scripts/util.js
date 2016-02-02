@@ -4,6 +4,7 @@ function time() {
 }
 
 function clamp(a, n, b) {
+  if(!b) b = Infinity;
   if(a > b) {
     var temp = a;
     a = b;

@@ -20,16 +20,23 @@ var Game = Fiber.extend(function() {
       
       this.ground = new Ground(this);
 
-      this.vehicle = new Vehicle(this);
+      this.vehicles = [];
+
+      this.add_vehicle(new Vehicle(this));
 
       var game = this;
       
       $(window).blur(function() {
         game.focus = false;
       });
+      
       $(window).focus(function() {
         game.focus = true;
       });
+    },
+
+    add_vehicle: function(vehicle) {
+      this.vehicles.push(vehicle);
     },
 
     is_paused: function() {
@@ -46,11 +53,11 @@ var Game = Fiber.extend(function() {
       return this.loader;
     },
     
-    get_world: function() {
+    get_physics_world: function() {
       return this.world.get_world();
     },
 
-    get_scene: function() {
+    get_render_scene: function() {
       return this.renderer.get_scene();
     },
 
@@ -60,7 +67,9 @@ var Game = Fiber.extend(function() {
 
     done: function() {
       this.ground.done();
-      this.vehicle.done();
+
+      for(var i=0; i<this.vehicles.length; i++)
+        this.vehicles[i].done();
     },
 
     tick: function(elapsed) {
@@ -71,7 +80,8 @@ var Game = Fiber.extend(function() {
       this.time += elapsed;
 
       this.world.tick(elapsed);
-      this.vehicle.tick(elapsed);
+      for(var i=0; i<this.vehicles.length; i++)
+        this.vehicles[i].tick(elapsed);
       this.renderer.tick(elapsed);
     }
 

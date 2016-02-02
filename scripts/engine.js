@@ -6,6 +6,8 @@ var Engine = Obj.extend(function(base) {
       this.model_url = 'vehicles/new-shepard/be-3.json';
       this.vehicle = null;
 
+      this.mass = 100;
+      
       this.throttle = 0;
       this.throttle_range = [0.4, 1];
       
@@ -17,7 +19,7 @@ var Engine = Obj.extend(function(base) {
 
       this.flame = null;
 
-      this.max_gimbal = radians(10);
+      this.max_gimbal = radians(5);
 
       base.init.apply(this, arguments);
 
@@ -46,17 +48,11 @@ var Engine = Obj.extend(function(base) {
       return this.started;
     },
 
-    add_to_scene: function(scene) {
-      base.add_to_scene.apply(this, arguments);
-      
-      this.mesh.add(this.particle.group.mesh);
-    },
-
     init_physics: function() {
       var shape = new CANNON.Cylinder(0.5, 0.1, 1.5, 12);
       
       this.body = new CANNON.Body({
-        mass: 100,
+        mass: this.mass * this.game.mass_multiplier,
         shape: shape
       });
 
@@ -76,6 +72,7 @@ var Engine = Obj.extend(function(base) {
         texture: {
           value: this.flame
         },
+        hasPerspective: true,
         maxParticleCount: 4000
       });
 
@@ -98,19 +95,19 @@ var Engine = Obj.extend(function(base) {
 
         velocity: {
           value: new THREE.Vector3(0, -120, 0),
-          spread: new THREE.Vector3(10, 100, 10)
+          spread: new THREE.Vector3(10, 30, 10)
         },
 
         color: {
-          value: [ new THREE.Color(0xffaa00), new THREE.Color(0xff8800) ]
+          value: [ new THREE.Color(0xff88aa), new THREE.Color(0x882266) ]
         },
 
         opacity: {
-          value: [0.01, 0.1, 0.02, 0.005, 0]
+          value: [0.01, 0.03, 0.005, 0.001, 0.0002, 0]
         },
         
         size: {
-          value: [2, 8.0, 20.0],
+          value: [2, 5.0, 10.0],
           spread: 1
         },
 
@@ -121,14 +118,21 @@ var Engine = Obj.extend(function(base) {
     },
 
     add_to_vehicle: function(vehicle, position) {
+      this.positoin = position;
+      
       this.vehicle = vehicle;
       
       this.body.position = position;
       this.body.position.vadd(vehicle.body.position, this.body.position);
       
       this.constraint = new CANNON.LockConstraint(this.body, vehicle.body, {
-        maxForce: 1e90
+        maxForce: 1e50
       });
+
+      for(var i=0; i<this.constraint.equations.length; i++){
+        this.constraint.equations[i].setSpookParams(1e30, 0.5, 0.02);
+      }
+      window.constraint = this.constraint;
       
       this.constraint.collideConnected = false;
       this.world.world.addConstraint(this.constraint);
@@ -168,6 +172,11 @@ var Engine = Obj.extend(function(base) {
       this.body.applyLocalForce(vector, new CANNON.Vec3(0, 0, 0));
     },
 
+    done: function() {
+      this.mesh.add(this.particle.group.mesh);
+      base.done.call(this);
+    },
+
     tick: function(elapsed) {
       this.clamp_values();
       
@@ -175,9 +184,11 @@ var Engine = Obj.extend(function(base) {
 
       this.particle.emitter.activeMultiplier = this.throttle;
 
-      var steps = 5;
-      for(var i=0; i<steps; i++)
-        this.particle.group.tick(elapsed / steps);
+      if(elapsed) {
+        var steps = 5;
+        for(var i=0; i<steps; i++)
+          this.particle.group.tick(elapsed / steps);
+      }
       
       this.light.intensity = clerp(0.4, this.throttle, 1, 0, 2);
       var spread = 0.1;

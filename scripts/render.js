@@ -12,29 +12,34 @@ var Renderer = Fiber.extend(function() {
       //
       this.camera = this.new_camera();
 
-      this.camera.position.z = 1.7;
-      this.camera.position.x = -10;
-      this.camera.position.y = -30;
-      this.camera.up.set(0, 0, 1);
+      this.camera.camera.position.z = 10;
+      this.camera.camera.position.x = -50;
+      this.camera.camera.position.y = -30;
+      this.camera.camera.up.set(0, 0, 1);
+
+      this.scene.add(this.camera.object);
       //
 
       this.renderer = new THREE.WebGLRenderer({
         antialias: true,
-        alpha: true
+        alpha: true,
+        shadowMapCullFace: THREE.CullFaceFront,
+        shadowMapCascade: true
       });
 
-      this.renderer.setClearColor(0xaaccff, 1);
+      this.renderer.setClearColor(0xddeeff, 1);
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
       this.init_sun();
       this.init_hemi();
+      this.init_skydome();
       
       $('#canvas').append(this.renderer.domElement);
     },
 
     new_camera: function() {
-      var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+      var camera = new PerspectiveCamera(this.game);
       this.cameras.push(camera);
       return camera;
     },
@@ -44,6 +49,24 @@ var Renderer = Fiber.extend(function() {
       this.sun.position.set(0.2, -0.5, 1);
       this.sun.position.normalize();
       this.add(this.sun);
+    },
+
+    init_skydome: function() {
+      var renderer = this;
+      this.game.get_loader().load_texture('images/skydome/skydome.jpg', function(texture) {
+        var material = new THREE.MeshBasicMaterial({
+          map: texture,
+          side: THREE.BackSide,
+          depthWrite: false
+        });
+
+        var skyGeo = new THREE.SphereGeometry(1000, 25, 25);
+
+        renderer.sky = new THREE.Mesh(skyGeo, material);
+        renderer.sky.rotation.x = Math.PI * 0.5;
+        renderer.scene.add(renderer.sky);
+        
+      });
     },
 
     init_hemi: function() {
@@ -63,26 +86,39 @@ var Renderer = Fiber.extend(function() {
       this.renderer.setSize(size[0], size[1]);
       
       for(var i=0; i<this.cameras.length; i++) {
-        var camera = this.cameras[i];
-        camera.aspect = size[0]/size[1];
-        camera.updateProjectionMatrix();
+        this.cameras[i].resize(size);
+//        var camera = this.cameras[i];
+//        camera.aspect = size[0]/size[1];
+//        camera.updateProjectionMatrix();
       }
       
     },
 
+    get_active_camera: function() {
+      return this.game.vehicles[0].camera;
+      return this.camera;
+    },
+
     tick: function(elapsed) {
-      var distance = this.camera.position.distanceTo(this.game.vehicle.body.position);
-      var size = 30;
-      var fov = degrees(Math.atan2(size, distance));
-      
-      this.camera.fov = fov;
+      var distance = this.camera.object.position.distanceTo(this.game.vehicles[0].body.position);
+      var size = 15;
+      var fov = degrees(Math.atan2(size, distance)) * 2;
+
+      fov = clamp(0.5, fov);
+
+//      this.camera.camera.fov = fov;
       
       for(var i=0; i<this.cameras.length; i++) {
-        this.cameras[i].updateProjectionMatrix();
+        this.cameras[i].tick();
       }
+
+      var camera = this.get_active_camera();
       
-      this.camera.lookAt(this.game.vehicle.body.position);
-      this.renderer.render(this.scene, this.camera);
+      this.sky.position.copy(camera.camera.position);
+      
+      this.camera.camera.lookAt(this.game.vehicles[0].body.position);
+      
+      this.renderer.render(this.scene, camera.camera);
     }
 
   }
