@@ -120,7 +120,7 @@ var Sound = Fiber.extend(function() {
     },
 
     set_velocity: function(vel) {
-      var fac = 10;
+      var fac = 1;
       this.panner.setVelocity(vel.x * fac, vel.y * fac, vel.z * fac);
     },
 

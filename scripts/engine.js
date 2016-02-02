@@ -6,6 +6,8 @@ var Engine = Obj.extend(function(base) {
       this.vehicle = null;
 
       this.throttle = 0;
+
+      this.engine_throttle = 0;
       
       this.gimbal = [0, 0];
 
@@ -88,7 +90,7 @@ var Engine = Obj.extend(function(base) {
     },
 
     get_thrust: function() {
-      return this.max_thrust * this.throttle;
+      return this.max_thrust * this.engine_throttle;
     },
 
     get_physics_thrust: function() {
@@ -120,8 +122,8 @@ var Engine = Obj.extend(function(base) {
     },
 
     update_sound: function() {
-      this.sound.set_volume(clerp(0, this.throttle, 1, 0, 1));
-      this.sound.set_pitch(clerp(0, this.throttle, 1, 0.3, 1.0));
+      this.sound.set_volume(clerp(0, this.engine_throttle, 1, 0, 1));
+      this.sound.set_pitch(clerp(0, this.engine_throttle, 1, 0.3, 1.0));
       this.sound.set_position(this.object.position);
       this.sound.set_velocity(this.body.velocity);
 
@@ -133,10 +135,15 @@ var Engine = Obj.extend(function(base) {
 
     tick: function(elapsed) {
       this.clamp_values();
+
+      this.engine_throttle += (this.throttle - this.engine_throttle) / (this.throttle_response / elapsed);
+      if(!this.is_running())
+        this.engine_throttle /= 0.1 / elapsed;
+      this.engine_throttle = clamp(0, this.engine_throttle, 1);
       
       this.apply_force();
 
-      this.particle.emitter.activeMultiplier = this.throttle;
+      this.particle.emitter.activeMultiplier = this.engine_throttle;
 
       if(elapsed) {
         var steps = 5;
@@ -283,6 +290,8 @@ var ScimitarEngine = Engine.extend(function(base) {
     init: function(game) {
       this.model_url = 'vehicles/xaero/scimitar.json';
 
+      this.throttle_response = 0.05;
+      
       this.color = 0xff88cc;
 
       this.mass = 15;

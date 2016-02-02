@@ -7,12 +7,21 @@ var Vehicle = Obj.extend(function(base) {
 
       this.init_shadow();
       this.init_engines();
-      this.init_autopilot();
       this.init_camera();
     },
 
     move: function(x, y, z) {
       this.body.position.set(x, y, z);
+    },
+
+    // data
+
+    get_altitude: function() {
+      return this.body.position.z;
+    },
+
+    get_vspeed: function() {
+      return this.body.velocity.z;
     },
 
     init_camera: function() {
@@ -25,8 +34,12 @@ var Vehicle = Obj.extend(function(base) {
       this.object.add(this.camera.object);
     },
 
-    init_autopilot: function() {
-      this.autopilot = new Autopilot(this.game, this);
+    engine_start: function() {
+      this.engine.start();
+    },
+
+    engine_stop: function() {
+      this.engine.stop();
     },
 
     set_gimbal: function(gimbal) {
@@ -61,7 +74,7 @@ var Vehicle = Obj.extend(function(base) {
     },
 
     tick: function(elapsed) {
-      this.autopilot.tick();
+      this.autopilot.tick(elapsed);
       
       base.tick.call(this, elapsed);
 

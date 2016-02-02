@@ -30,8 +30,8 @@ var World = Fiber.extend(function() {
 
       this.create_contact_material('ground', 'ground', 0.5, 0.01);
       this.create_contact_material('ground', 'tank', 0.8, 0.01);
-      this.create_contact_material('ground', 'nozzle', 1, 0.0);
-      this.create_contact_material('tank', 'nozzle', 0.2, 0.002);
+      this.create_contact_material('ground', 'nozzle', 1, 0.8);
+      this.create_contact_material('tank', 'nozzle', 0.2, 0.8);
     },
 
     create_material: function(name) {

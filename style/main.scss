@@ -6,3 +6,14 @@ html, body, #canvas {
   height: 100%;
   overflow: hidden;
 }
+
+#state {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: rgba(black, 0.5);
+  color: white;
+  font-family: monospace;
+  padding: 5px;
+  z-index: 1000;
+}

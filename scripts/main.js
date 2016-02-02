@@ -25,7 +25,9 @@ function resize() {
 function done() {
   game.done();
 
-  tick();
+  setTimeout(function() {
+    tick();
+  }, 10);
 }
 
 function tick() {
