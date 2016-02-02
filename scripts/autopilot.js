@@ -58,8 +58,8 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
     init_autopilot: function() {
       this.rest_altitude = 2.3;
       
-      this.altitude_pid = this.new_pid(0.5, 0.2, 0, 5);
-      this.vspeed_pid = this.new_pid(0.6, 0.2, 0, 1.0);
+      this.altitude_pid = this.new_pid(0.5, 0.15, 0, 5);
+      this.vspeed_pid = this.new_pid(1.2, 0.4, 0, 1.0);
       this.vspeed_pid.limits = [0, 1];
 
       this.states = [
@@ -67,6 +67,7 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
         'startup',
         'liftoff',
         'hover',
+        'descend',
         'land',
         'shutdown'
       ];
@@ -87,8 +88,9 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
     tick_autopilot: function() {
       $('#state').text(this.state);
       
-      var liftoff_altitude = 0.1;
-      var hover_altitude = 10;
+      var liftoff_altitude = 0.01;
+      var hover_altitude = 30;
+      var landing_altitude = 1;
       var altitude = this.vehicle.get_altitude() - this.rest_altitude;
       var vspeed = this.vehicle.get_vspeed();
 
@@ -97,6 +99,8 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       } else if(altitude > liftoff_altitude && this.state == 'liftoff') {
         this.set_state('hover');
       } else if(altitude > hover_altitude && this.state == 'hover') {
+        this.set_state('descend');
+      } else if(altitude < landing_altitude && this.state == 'descend') {
         this.set_state('land');
       } else if(altitude < liftoff_altitude && this.state == 'land') {
         this.set_state('shutdown');
@@ -114,6 +118,7 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       var target_altitude = 0;
       if(this.state == 'startup') target_altitude = 0;
       if(this.state == 'hover') target_altitude = hover_altitude + 0.5;
+      if(this.state == 'descend') target_altitude = landing_altitude;
       else if(this.state == 'land') target_altitude = 0;
 
       this.altitude_pid.set_target(target_altitude);
@@ -121,6 +126,9 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
 
       this.vspeed_pid.set_target(this.altitude_pid.get());
       this.vspeed_pid.set_measure(vspeed);
+
+      if(this.state == 'land')
+        this.vspeed_pid.set_target(clerp(0, altitude, 10, -0.05, -5));
 
       this.throttle = this.vspeed_pid.get();
 

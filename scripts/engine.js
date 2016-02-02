@@ -156,7 +156,7 @@ var Engine = Obj.extend(function(base) {
       this.mesh.rotation.x += Math.PI * 0.5;
       this.mesh.updateMatrix();
       
-      this.light.intensity = clerp(0.4, this.throttle, 1, 0, 1);
+      this.light.intensity = clerp(0, this.engine_throttle, 1, 0, 1);
       var spread = 0.1;
       this.light.intensity *= clerp(0, perlin.get1d(this.game.get_time() * 6), 1, 1-spread, 1+spread);
       
