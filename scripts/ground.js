@@ -21,7 +21,7 @@ var Ground = Fiber.extend(function() {
 
       this.new_pad(0, 0, 0);
       this.new_pad(-15, -10, 80);
-      this.new_pad(-100, 50, 20);
+      this.new_pad(-100, 50, 0);
     },
 
     new_pad: function(x, y, rot) {

@@ -106,6 +106,7 @@ var Renderer = Fiber.extend(function() {
     },
     
     get_active_camera: function() {
+      this.active_camera = this.active_camera % this.cameras.length;
       return this.cameras[this.active_camera];
     },
 

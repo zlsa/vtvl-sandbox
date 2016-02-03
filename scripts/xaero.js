@@ -419,7 +419,7 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
         'inflight-shutdown',
         'coast',
         'inflight-startup',
-        'hover',
+        'translate',
         'descent',
         'land',
         'shutdown',
@@ -440,6 +440,8 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
         'boost-vspeed': 20,
 
         'land-altitude': 10,
+
+        'translate-distance': 0.3,
         'touchdown-altitude': 0.05
       };
       
@@ -452,15 +454,15 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
 
       var state = this.get_state();
 
-      if(state == 'hover')
+      if(state == 'hover' || state == 'translate')
         target_altitude = constants['hover-altitude'];
       if(state == 'descent')
         target_altitude = 0;
 
       var target_hspeed = [0, 0];
 
-      if(state == 'hover') {
-        target_crossrange.set(-100, 50);
+      if(state == 'descent' || state == 'translate') {
+        target_crossrange.set(this.target_crossrange.x, this.target_crossrange.y);
         target_hspeed = this.tick_hspeed(target_crossrange);
       }
       
@@ -493,6 +495,8 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
         this.next_state();
       }
 
+      var distance = measured_crossrange.distanceTo(target_crossrange);
+
       if(this.time > 2 && state == 'preidle') {
         this.next_state();
       } else if(measured_altitude > constants['liftoff-altitude'] && state == 'liftoff') {
@@ -506,6 +510,8 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
       } else if(measured_altitude < this.boost_end && state == 'coast') {
         this.next_state();
       } else if(measured_altitude < constants['land-altitude'] && state == 'descent') {
+        this.next_state();
+      } else if(distance < constants['translate-distance'] && state == 'translate') {
         this.next_state();
       } else if(measured_altitude < constants['touchdown-altitude'] && state == 'land') {
         this.next_state();
