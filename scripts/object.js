@@ -12,6 +12,8 @@ var Obj = Fiber.extend(function() {
     },
 
     remove: function() {
+      this.destroyed = true;
+      
       var scene = this.game.get_render_scene();
       var world = this.game.get_physics_world();
       scene.remove(this.object);
@@ -20,6 +22,7 @@ var Obj = Fiber.extend(function() {
 
       if(this.body)
         world.remove(this.body);
+      
     },
 
     init_render: function() {

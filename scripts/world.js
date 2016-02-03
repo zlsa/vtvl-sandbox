@@ -46,8 +46,8 @@ var World = Fiber.extend(function() {
       var cm = new CANNON.ContactMaterial(this.get_material(a), this.get_material(b), {
         friction: friction,
         restitution: restitution,
-        contactEquationStiffness: 1e100,
-        contactEquationRelaxation: 1
+        contactEquationStiffness: 1e30,
+        contactEquationRelaxation: 1.2
       });
       this.world.addContactMaterial(cm);
     },

@@ -7,7 +7,7 @@ html, body, #canvas {
   overflow: hidden;
 }
 
-#info {
+#info, #settings {
   position: absolute;
   top: 0;
   left: 0;
@@ -32,4 +32,13 @@ html, body, #canvas {
     }
   }
   
+}
+
+#settings {
+  right: 0;
+  left: auto;
+
+  li:hover {
+    cursor: pointer;
+  }
 }

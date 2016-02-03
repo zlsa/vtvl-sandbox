@@ -22,6 +22,8 @@ var Game = Fiber.extend(function() {
 
       this.sound = new SoundEnvironment(this);
 
+      this.settings = new Settings(this);
+
       this.vehicles = [];
 
       this.reset();
@@ -44,6 +46,7 @@ var Game = Fiber.extend(function() {
         this.vehicles[i].remove();
         delete this.vehicles[i];
       }
+      
       this.vehicles = [];
 
       this.time = 0;
@@ -107,6 +110,8 @@ var Game = Fiber.extend(function() {
       this.world.tick(elapsed);
       for(var i=0; i<this.vehicles.length; i++)
         this.vehicles[i].tick(elapsed);
+      this.ground.tick();
+      
       this.renderer.tick(elapsed);
       this.sound.tick();
     }

@@ -154,6 +154,18 @@ var XaeroVehicle = Vehicle.extend(function(base) {
       this.init_engines();
       
       this.shadow.shadowCameraFov = 0.3;
+      
+      this.camera.camera.position.z = 0.1;
+      this.camera.camera.position.y = 0;
+      this.camera.camera.position.x = 0.42;
+      this.camera.camera.rotation.x = 0;
+      this.camera.camera.rotation.z = Math.PI * 1.5;
+      this.camera.camera.rotation.y -= Math.PI * 0.1;
+      
+      this.camera.camera.near = 0.1;
+      this.camera.camera.far = 5000;
+      this.camera.camera.fov = 60;
+
     },
 
     remove: function() {
@@ -195,7 +207,8 @@ var XaeroVehicle = Vehicle.extend(function(base) {
 
     loaded: function(geometry, materials) {
       var material = new THREE.MeshPhongMaterial({
-        color: 0xdddddd
+        color: 0xdddddd,
+        shininess: 100,
       });
       this.mesh = new THREE.Mesh(geometry, material);
       this.mesh.rotation.x = Math.PI * 0.5;
@@ -209,7 +222,7 @@ var XaeroVehicle = Vehicle.extend(function(base) {
       base.done.call(this);
 
       this.engine.done();
-      this.engine.add_to_vehicle(this, new CANNON.Vec3(0, 0, -1.8));
+      this.engine.add_to_vehicle(this, new CANNON.Vec3(0.0, 0.0, -1.8));
       
       this.fuel_tank.done();
       this.fuel_tank.add_to_vehicle(this, new CANNON.Vec3(0, 0, 0.8));
@@ -239,7 +252,7 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
   return {
 
     init_autopilot: function() {
-      this.rest_altitude = 2.3;
+      this.rest_altitude = 2.3 + 0.1;
       
       this.altitude_pid = this.new_pid(0.8, 0.05, 0, 3);
       this.vspeed_pid = this.new_pid(2.0, 0.7, 0, 3);
@@ -252,8 +265,8 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       this.hspeed_y_pid.limits = [-x, x];
       this.pitch_x_pid = this.new_pid(4, 0.3, 1.5);
       this.pitch_y_pid = this.new_pid(4, 0.3, 1.5);
-      this.pitch_velocity_x_pid = this.new_pid(2, 0.05, 0);
-      this.pitch_velocity_y_pid = this.new_pid(2, 0.05, 0);
+      this.pitch_velocity_x_pid = this.new_pid(2.5, 0.08, 0);
+      this.pitch_velocity_y_pid = this.new_pid(2.5, 0.08, 0);
 
       var max_angle = radians(20);
       this.pitch_x_pid.limits = [-max_angle, max_angle];
@@ -302,7 +315,7 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       
     },
 
-    tick_gimbal: function(target_crossrange) {
+    tick_hspeed: function(target_crossrange) {
       var measured_crossrange = this.vehicle.get_crossrange();
       
       var measured_orientation = this.vehicle.get_orientation();
@@ -318,20 +331,37 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       var x_offset = (target_crossrange.x - measured_crossrange.x);
       var y_offset = (target_crossrange.y - measured_crossrange.y);
 
-      x_offset *= clerp(0, Math.abs(x_offset), 15, 2, 1);
-      y_offset *= clerp(0, Math.abs(y_offset), 15, 2, 1);
+      x_offset *= clerp(0, Math.abs(x_offset), 15, 1.5, 1);
+      y_offset *= clerp(0, Math.abs(y_offset), 15, 1.5, 1);
       
-      x_offset *= clerp(0, Math.abs(x_offset), 5, 2, 1);
-      y_offset *= clerp(0, Math.abs(y_offset), 5, 2, 1);
+      x_offset *= clerp(0, Math.abs(x_offset), 2, 3, 1);
+      y_offset *= clerp(0, Math.abs(y_offset), 2, 3, 1);
+      
+      x_offset *= clerp(0, this.vehicle.engine.get_thrust_fraction(), 1, 1.3, 1);
+      y_offset *= clerp(0, this.vehicle.engine.get_thrust_fraction(), 1, 1.3, 1);
 
       this.hspeed_x_pid.set_target(x_offset * 0.2);
       this.hspeed_y_pid.set_target(y_offset * 0.2);
       this.hspeed_x_pid.set_measure(measured_hspeed.x);
       this.hspeed_y_pid.set_measure(measured_hspeed.y);
+    },
 
-      this.pitch_x_pid.set_target(this.hspeed_x_pid.get());
+    tick_gimbal: function(target_hspeed) {
+      if(!target_hspeed)
+        target_hspeed = [this.hspeed_x_pid.get(), this.hspeed_y_pid.get()];
+      var measured_orientation = this.vehicle.get_orientation();
+      var measured_angular_velocity = this.vehicle.get_angular_velocity();
+
+      var measured_hspeed = this.vehicle.get_hspeed();
+      var measured_pitch = new THREE.Vector3(0, 0, 1);
+      measured_pitch.applyQuaternion(measured_orientation);
+
+      var measured_pitch_velocity = new THREE.Vector3(0, 0, 1);
+      measured_pitch_velocity.applyEuler(measured_angular_velocity);
+
+      this.pitch_x_pid.set_target(target_hspeed[0]);
       this.pitch_x_pid.set_measure(measured_pitch.x);
-      this.pitch_y_pid.set_target(this.hspeed_y_pid.get());
+      this.pitch_y_pid.set_target(target_hspeed[1]);
       this.pitch_y_pid.set_measure(measured_pitch.y);
 
       var target_pitch_velocity = new THREE.Vector3(0, 0, 0);
@@ -404,11 +434,12 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
       var constants = {
         'liftoff-altitude': 5, // full throttle until this high
         
-        'hover-altitude': 25,
-        'hover-time': 10,
+        'hover-altitude': 50,
+        'hover-time': 20,
         
-        'boost-vspeed': 13,
-        'coast-time': 2,
+        'boost-vspeed': 20,
+        
+        'extra-altitude': 3,
 
         'land-altitude': 10,
         'touchdown-altitude': 0.05
@@ -428,125 +459,15 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
       if(state == 'descent')
         target_altitude = 0;
 
-      if(state == 'hover')
-        target_crossrange.set(15, 0);
-      else
-        target_crossrange.copy(measured_crossrange);
+      var target_hspeed = [0, 0];
 
+      if(state == 'hover') {
+        target_crossrange.set(-100, 50);
+        target_hspeed = this.tick_hspeed(target_crossrange);
+      }
+      
       this.tick_throttle(target_altitude);
-      this.tick_gimbal(target_crossrange);
-
-      if(state == 'land') {
-        var vspeed = clerp(2, measured_altitude, 70, 0, -15);
-        vspeed += clerp(0, measured_altitude, 2, -0.02, -3);
-        this.vspeed_pid.set_target(vspeed);
-      }
-
-      this.throttle = this.vspeed_pid.get();
-      
-      if(state == 'liftoff' || state == 'boost') {
-        this.throttle = 1;
-      }
-      
-      this.gimbal[0] = -this.pitch_velocity_x_pid.get();
-      this.gimbal[1] = -this.pitch_velocity_y_pid.get();
-
-      if(state == 'boost')
-        this.gimbal[0] = 0.005;
-      
-      if(state == 'inflight-startup')
-        this.hover_start_time = this.time;
-      
-      if(state == 'startup' || state == 'inflight-startup') {
-        this.engine_start();
-        this.next_state();
-      } else if(state == 'shutdown' || state == 'inflight-shutdown') {
-        this.engine_stop();
-        this.next_state();
-      }
-
-      
-      if(this.time > 2 && state == 'preidle') {
-        this.next_state();
-      } else if(measured_altitude > constants['liftoff-altitude'] && state == 'liftoff') {
-        this.next_state();
-        this.hover_start_time = this.time;
-      } else if(elapsed(this.time, this.hover_start_time) > constants['hover-time'] && state == 'hover') {
-        this.next_state();
-      } else if(measured_vspeed > constants['boost-vspeed'] && state == 'boost') {
-        this.next_state();
-        this.coast_start_time = this.time;
-      } else if(elapsed(this.time, this.coast_start_time) > constants['coast-time'] && state == 'coast') {
-        this.next_state();
-      } else if(measured_altitude < constants['land-altitude'] && state == 'descent') {
-        this.next_state();
-      } else if(measured_altitude < constants['touchdown-altitude'] && state == 'land') {
-        this.next_state();
-      }
-
-      this.tick_info();
-    }
-
-  }
-});
-
-var XaeroHoverAutopilot = XaeroAutopilot.extend(function(base) {
-  return {
-
-    init_states: function() {
-      this.time = 0;
-      
-      this.states = [
-        'preidle',
-        'startup',
-        'liftoff',
-        'hover',
-        'descent',
-        'land',
-        'shutdown',
-        'safe'
-      ];
-
-      this.state = 0;
-    },
-
-    tick_autopilot: function() {
-
-      var constants = {
-        'liftoff-altitude': 0.2, // full throttle until this high
-        
-        'hover-altitude': 3,
-        'hover-time': 30,
-        
-        'boost-vspeed': 13,
-
-        'land-altitude': 10,
-        'touchdown-altitude': 0.05
-      };
-      
-      var target_altitude = 0;
-      var target_crossrange = new THREE.Vector2(0, 0);
-
-      var measured_crossrange = this.vehicle.get_crossrange();
-      var measured_altitude = this.vehicle.get_altitude() - this.rest_altitude;
-      var measured_vspeed = this.vehicle.get_vspeed();
-
-      var state = this.get_state();
-
-      if(state == 'hover')
-        target_altitude = constants['hover-altitude'];
-      if(state == 'descent')
-        target_altitude = 0;
-
-      if(state == 'hover')
-        target_crossrange.set(5, 0);
-      else
-        target_crossrange.copy(measured_crossrange);
-
-      if(this.engine_started()) {
-        this.tick_throttle(target_altitude);
-        this.tick_gimbal(target_crossrange);
-      }
+      this.tick_gimbal(target_hspeed);
 
       if(state == 'land') {
         var vspeed = clerp(2, measured_altitude, 70, 0, -15);
@@ -574,7 +495,6 @@ var XaeroHoverAutopilot = XaeroAutopilot.extend(function(base) {
         this.next_state();
       }
 
-      
       if(this.time > 2 && state == 'preidle') {
         this.next_state();
       } else if(measured_altitude > constants['liftoff-altitude'] && state == 'liftoff') {
@@ -584,8 +504,8 @@ var XaeroHoverAutopilot = XaeroAutopilot.extend(function(base) {
         this.next_state();
       } else if(measured_vspeed > constants['boost-vspeed'] && state == 'boost') {
         this.next_state();
-        this.coast_start_time = this.time;
-      } else if(elapsed(this.time, this.coast_start_time) > constants['coast-time'] && state == 'coast') {
+        this.boost_end = measured_altitude + constants['extra-altitude'];
+      } else if(measured_altitude < this.boost_end && state == 'coast') {
         this.next_state();
       } else if(measured_altitude < constants['land-altitude'] && state == 'descent') {
         this.next_state();

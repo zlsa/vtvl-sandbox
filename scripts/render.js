@@ -8,7 +8,10 @@ var Renderer = Fiber.extend(function() {
       this.scene = new THREE.Scene();
 
       this.cameras = [];
+      this.active_camera = 0;
 
+      if('camera' in localStorage)
+        this.active_camera = localStorage['camera'];
       //
       this.camera = this.new_camera();
 
@@ -34,7 +37,10 @@ var Renderer = Fiber.extend(function() {
       this.init_sun();
       this.init_hemi();
       this.init_skydome();
-      
+
+      this.fog = new THREE.FogExp2(0xffffff, 0.0005);
+      this.scene.fog = this.fog;
+
       $('#canvas').append(this.renderer.domElement);
     },
 
@@ -45,8 +51,8 @@ var Renderer = Fiber.extend(function() {
     },
 
     init_sun: function() {
-      this.sun = new THREE.DirectionalLight( 0xffffff, 1);
-      this.sun.position.set(0.2, -0.5, 1);
+      this.sun = new THREE.DirectionalLight( 0xffeecc, 1.3);
+      this.sun.position.set(0.0, -0.8, 1);
       this.sun.position.normalize();
       this.add(this.sun);
     },
@@ -57,7 +63,8 @@ var Renderer = Fiber.extend(function() {
         var material = new THREE.MeshBasicMaterial({
           map: texture,
           side: THREE.BackSide,
-          depthWrite: false
+          depthWrite: false,
+          fog: false
         });
 
         var skyGeo = new THREE.SphereGeometry(50000, 25, 25);
@@ -91,18 +98,23 @@ var Renderer = Fiber.extend(function() {
       
     },
 
+    next_camera: function(offset) {
+      this.active_camera += offset || 1;
+      this.active_camera = this.active_camera % this.cameras.length;
+
+      localStorage['camera'] = this.active_camera;
+    },
+    
     get_active_camera: function() {
-//      return this.game.vehicles[0].camera;
-      return this.camera;
+      return this.cameras[this.active_camera];
     },
 
     tick: function(elapsed) {
-      var distance = this.camera.object.position.distanceTo(this.game.vehicles[0].object.position);
-      var size = 10;
-      var fov = degrees(Math.atan2(size, distance));
-
-      fov = clamp(3, fov);
-
+      var distance = this.camera.camera.position.distanceTo(this.game.vehicles[0].body.position);
+      
+      this.camera.auto_zoom(distance, 20);
+      this.camera.camera.lookAt(this.game.vehicles[0].body.position);
+      
       var camera = this.get_active_camera();
       camera.tick(elapsed);
 
@@ -110,9 +122,7 @@ var Renderer = Fiber.extend(function() {
       position.applyMatrix4(camera.object.matrixWorld);
       
       this.skydome.position.copy(position);
-      
-      this.camera.camera.lookAt(this.game.vehicles[0].body.position);
-      
+
       this.renderer.render(this.scene, camera.camera);
     }
 

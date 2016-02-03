@@ -149,6 +149,8 @@ var Engine = Obj.extend(function(base) {
     },
 
     tick: function(elapsed) {
+      if(this.destroyed) return;
+      
       this.clamp_values();
 
       this.throttle += (this.throttle_command - this.throttle) / (this.throttle_response / elapsed);

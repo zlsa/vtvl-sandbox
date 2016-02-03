@@ -13,6 +13,11 @@ var Loader = Fiber.extend(function() {
       
     },
 
+    is_done: function() {
+      if(this.complete >= this.total) return true;
+      return false;
+    },
+
     before_load: function() {
       this.total += 1;
     },

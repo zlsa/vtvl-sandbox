@@ -20,8 +20,15 @@ var PerspectiveCamera = Obj.extend(function(base) {
       this.camera.aspect = size[0]/size[1];
     },
 
+    auto_zoom: function(distance, size) {
+      var fov = degrees(Math.atan2(size, distance));
+
+      this.camera.fov = fov;
+    },
+
     tick: function(elapsed) {
       var position = get_global_position(this.camera);
+      position.x *= -1;
       this.game.get_sound().set_position(position);
       
       var orientation = new THREE.Vector3(0, 0, 1);
