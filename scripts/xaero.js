@@ -438,8 +438,6 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
         'hover-time': 20,
         
         'boost-vspeed': 20,
-        
-        'extra-altitude': 3,
 
         'land-altitude': 10,
         'touchdown-altitude': 0.05
@@ -504,7 +502,7 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
         this.next_state();
       } else if(measured_vspeed > constants['boost-vspeed'] && state == 'boost') {
         this.next_state();
-        this.boost_end = measured_altitude + constants['extra-altitude'];
+        this.boost_end = measured_altitude;
       } else if(measured_altitude < this.boost_end && state == 'coast') {
         this.next_state();
       } else if(measured_altitude < constants['land-altitude'] && state == 'descent') {
