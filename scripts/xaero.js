@@ -455,6 +455,7 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
       var measured_crossrange = this.vehicle.get_crossrange();
       var measured_altitude = this.vehicle.get_altitude() - this.rest_altitude;
       var measured_vspeed = this.vehicle.get_vspeed();
+      var measured_hspeed = this.vehicle.get_hspeed().length();
 
       var state = this.get_state();
 
@@ -465,7 +466,7 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
 
       var target_hspeed = [0, 0];
 
-      if(state == 'descent' || state == 'translate') {
+      if(state == 'descent' || state == 'translate' || state == 'land') {
         target_crossrange.set(this.target_crossrange.x, this.target_crossrange.y);
         target_hspeed = this.tick_hspeed(target_crossrange);
       }
@@ -515,7 +516,7 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
         this.next_state();
       } else if(Math.abs(target_altitude - measured_altitude) < constants['arrest-accuracy'] && state == 'arrest') {
         this.next_state();
-      } else if(distance < constants['translate-accuracy'] && state == 'translate') {
+      } else if(distance < constants['translate-accuracy'] && measured_hspeed < 0.5 && state == 'translate') {
         this.next_state();
       } else if(measured_altitude < constants['land-altitude'] && state == 'descent') {
         this.next_state();
