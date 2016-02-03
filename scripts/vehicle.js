@@ -65,11 +65,11 @@ var Vehicle = Obj.extend(function(base) {
     },
 
     set_gimbal: function(gimbal) {
-      this.engine.gimbal = gimbal;
+      this.engine.gimbal_command = gimbal;
     },
 
     set_throttle: function(throttle) {
-      this.engine.throttle = throttle;
+      this.engine.throttle_command = throttle;
     },
 
     get_mass: function() {

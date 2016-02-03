@@ -62,10 +62,8 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       this.vspeed_pid = this.new_pid(0.8, 0.3, 0, 2.0);
       this.vspeed_pid.limits = [0, 1];
       
-      this.crossrange_x_pid = this.new_pid(0.5, 0.0, 0);
-      this.crossrange_y_pid = this.new_pid(0.5, 0.0, 0);
-      this.hspeed_x_pid = this.new_pid(0.08, 0.0015, 0);
-      this.hspeed_y_pid = this.new_pid(0.08, 0.0015, 0);
+      this.hspeed_x_pid = this.new_pid(0.1, 0.001, 0);
+      this.hspeed_y_pid = this.new_pid(0.1, 0.001, 0);
       var x = 0.2;
       this.hspeed_x_pid.limits = [-x, x];
       this.hspeed_y_pid.limits = [-x, x];
@@ -111,8 +109,8 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       var fuzz = 0.05;
       var liftoff_altitude = 0.5;
       var hover_time = 2;
-      var translate_time = 10;
-      var hover_altitude = 50;
+      var translate_time = 20;
+      var hover_altitude = 20;
       var ground_altitude = 0.0;
       var landing_altitude = hover_altitude - 10;
 
@@ -141,26 +139,6 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       cr += crossrange.y.toFixed(2);
 //      console.log(cr);
 
-      if(this.time > 2 && this.state == 'preidle') {
-        this.set_state('startup');
-      } else if(altitude > liftoff_altitude && this.state == 'liftoff') {
-        this.set_state('ascent');
-      } else if(altitude > hover_altitude && this.state == 'ascent') {
-        this.set_state('hover');
-        this.hover_start = this.time;
-      } else if((this.time - this.hover_start) > hover_time && this.state == 'hover') {
-        this.set_state('translate');
-        this.hover_start = this.time;
-      } else if((this.time - this.hover_start) > translate_time && this.state == 'translate') {
-        this.set_state('descent');
-      } else if(altitude < landing_altitude+fuzz && this.state == 'descent') {
-        this.set_state('land');
-      } else if((altitude < ground_altitude+fuzz || vspeed > 0)&& this.state == 'land') {
-        this.set_state('shutdown');
-      } else if(this.time > 40 && this.state != 'shutdown') {
-        this.set_state('abort');
-      }
-
       if(this.state == 'startup') {
         this.engine_start();
         this.set_state('liftoff');
@@ -175,10 +153,10 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       else if(this.state == 'translate') target_altitude = hover_altitude + 3;
       else if(this.state == 'descent') target_altitude = 0;
       
-      if(this.state == 'translate') target_crossrange.set(-30, 10);
-      else if(this.state == 'descend') target_crossrange.set(-30, 10);
-      else if(this.state == 'land') target_crossrange.set(-30, 10);
-      else target_crossrange.copy(crossrange);
+      if(this.state == 'preidle' || this.state == 'startup' ||
+         this.state == 'liftoff' || this.state == 'ascent' || this.state == 'hover')
+        target_crossrange.set(0, 0);
+      else target_crossrange.set(-30, 10);
 
       this.altitude_pid.set_target(target_altitude);
       this.altitude_pid.set_measure(altitude);
@@ -188,22 +166,18 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
 
       //
 
-      this.crossrange_x_pid.set_target(target_crossrange.x);
-      this.crossrange_x_pid.set_measure(crossrange.x);
-      this.crossrange_y_pid.set_target(target_crossrange.y);
-      this.crossrange_y_pid.set_measure(crossrange.y);
-
 //      console.log(this.crossrange_x_pid.get());
 
-      this.hspeed_x_pid.set_target(this.crossrange_x_pid.get());
-      this.hspeed_y_pid.set_target(this.crossrange_y_pid.get());
-      
-//      this.hspeed_x_pid.set_target(lerp(-10, crossrange.x - target_crossrange.x, 10, 3, -3));
-      this.hspeed_x_pid.set_measure(hspeed.x);
-//      this.hspeed_y_pid.set_target(lerp(-10, crossrange.y - target_crossrange.y, 10, 3, -3));
-      this.hspeed_y_pid.set_measure(hspeed.y);
+      var x_offset = (target_crossrange.x - crossrange.x);
+      var y_offset = (target_crossrange.y - crossrange.y);
 
-//      console.log(this.hspeed_x_pid.get());
+      x_offset *= clerp(0, this.throttle, 1, 0.2, 1);
+      y_offset *= clerp(0, this.throttle, 1, 0.2, 1);
+      
+      this.hspeed_x_pid.set_target(x_offset * 0.2);
+      this.hspeed_y_pid.set_target(y_offset * 0.2);
+      this.hspeed_x_pid.set_measure(hspeed.x);
+      this.hspeed_y_pid.set_measure(hspeed.y);
 
       this.pitch_x_pid.set_target(this.hspeed_x_pid.get());
       this.pitch_x_pid.set_measure(pitch.x);
@@ -227,7 +201,7 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
 //      log_array([degrees(this.pitch_x_pid.get()), degrees(pitch.x)]);
 //      log_array([degrees(target_pitch_velocity.x), degrees(pitch_velocity.x)]);
 //      log_array([hspeed.x, this.crossrange_x_pid.get()]);
-      log_array([crossrange.x, crossrange.y]);
+//      log_array([crossrange.x, crossrange.y]);
 
 //      this.gimbal[1] = gimbal.y;
 
@@ -243,8 +217,30 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
         this.throttle = 1;
       }
 
-      var offset = distance_2d(target_crossrange.x - crossrange.x, target_crossrange.y - crossrange.y).toFixed(2);
-      $('#state').text(offset + 'm ' + this.state);
+      var offset = distance_2d(target_crossrange.x - crossrange.x, target_crossrange.y - crossrange.y);
+      $('#state').text(offset.toFixed(2) + 'm ' + this.state);
+
+      if(this.time > 2 && this.state == 'preidle') {
+        this.set_state('startup');
+      } else if(altitude > liftoff_altitude && this.state == 'liftoff') {
+        this.set_state('ascent');
+      } else if(altitude > hover_altitude && this.state == 'ascent') {
+        this.set_state('hover');
+        this.hover_start = this.time;
+      } else if((this.time - this.hover_start) > hover_time && this.state == 'hover') {
+        this.set_state('translate');
+        this.hover_start = this.time;
+      } else if(((this.time - this.hover_start) > translate_time) && this.state == 'translate') {
+        this.set_state('descent');
+      } else if(offset < 0.5 && this.state == 'translate') {
+        this.set_state('descent');
+      } else if(altitude < landing_altitude+fuzz && this.state == 'descent') {
+        this.set_state('land');
+      } else if((altitude < ground_altitude+fuzz || vspeed > 0)&& this.state == 'land') {
+        this.set_state('shutdown');
+      } else if(this.time > 60 && this.state != 'shutdown') {
+        this.set_state('abort');
+      }
 
     }
 

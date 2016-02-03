@@ -5,11 +5,12 @@ var Engine = Obj.extend(function(base) {
     init: function(game) {
       this.vehicle = null;
 
-      this.throttle = 0;
+      this.throttle_command = 0;
+      this.gimbal_command = [0, 0];
 
-      this.engine_throttle = 0;
-      
       this.gimbal = [0, 0];
+      this.throttle = 0;
+      
 
       this.started = false;
 
@@ -90,7 +91,7 @@ var Engine = Obj.extend(function(base) {
     },
 
     get_thrust: function() {
-      return this.max_thrust * this.engine_throttle;
+      return this.max_thrust * this.throttle;
     },
 
     get_physics_thrust: function() {
@@ -98,11 +99,11 @@ var Engine = Obj.extend(function(base) {
     },
 
     clamp_values: function() {
-      this.gimbal[0] = clamp(-1, this.gimbal[0], 1);
-      this.gimbal[1] = clamp(-1, this.gimbal[1], 1);
-      this.throttle = clamp(this.throttle_range[0], this.throttle, this.throttle_range[1]);
+      this.gimbal_command[0] = clamp(-1, this.gimbal_command[0], 1);
+      this.gimbal_command[1] = clamp(-1, this.gimbal_command[1], 1);
+      this.throttle_command = clamp(this.throttle_range[0], this.throttle_command, this.throttle_range[1]);
       
-      if(!this.is_running()) this.throttle = 0;
+      if(!this.is_running()) this.throttle_command = 0;
     },
 
     apply_force: function() {
@@ -122,8 +123,8 @@ var Engine = Obj.extend(function(base) {
     },
 
     update_sound: function() {
-      this.sound.set_volume(clerp(0, this.engine_throttle, 1, 0, 1));
-      this.sound.set_pitch(clerp(0, this.engine_throttle, 1, 0.3, 1.0));
+      this.sound.set_volume(clerp(0, this.throttle, 1, 0, 1));
+      this.sound.set_pitch(clerp(0, this.throttle, 1, 0.3, 1.0));
       this.sound.set_position(this.object.position);
       this.sound.set_velocity(this.body.velocity);
 
@@ -136,14 +137,19 @@ var Engine = Obj.extend(function(base) {
     tick: function(elapsed) {
       this.clamp_values();
 
-      this.engine_throttle += (this.throttle - this.engine_throttle) / (this.throttle_response / elapsed);
+      this.throttle += (this.throttle_command - this.throttle) / (this.throttle_response / elapsed);
       if(!this.is_running())
-        this.engine_throttle /= 0.1 / elapsed;
-      this.engine_throttle = clamp(0, this.engine_throttle, 1);
+        this.throttle /= 0.1 / elapsed;
+      this.throttle = clamp(0, this.throttle, 1);
+      
+      this.gimbal[0] += (this.gimbal_command[0] - this.gimbal[0]) / (this.gimbal_response / elapsed);
+      this.gimbal[0] = clamp(-1, this.gimbal[0], 1);
+      this.gimbal[1] += (this.gimbal_command[1] - this.gimbal[1]) / (this.gimbal_response / elapsed);
+      this.gimbal[1] = clamp(-1, this.gimbal[1], 1);
       
       this.apply_force();
 
-      this.particle.emitter.activeMultiplier = this.engine_throttle;
+      this.particle.emitter.activeMultiplier = this.throttle;
 
       if(elapsed) {
         var steps = 5;
@@ -156,7 +162,7 @@ var Engine = Obj.extend(function(base) {
       this.mesh.rotation.x += Math.PI * 0.5;
       this.mesh.updateMatrix();
       
-      this.light.intensity = clerp(0, this.engine_throttle, 1, 0, 1);
+      this.light.intensity = clerp(0, this.throttle, 1, 0, 1);
       var spread = 0.1;
       this.light.intensity *= clerp(0, perlin.get1d(this.game.get_time() * 6), 1, 1-spread, 1+spread);
       
@@ -291,6 +297,7 @@ var ScimitarEngine = Engine.extend(function(base) {
       this.model_url = 'vehicles/xaero/scimitar.json';
 
       this.throttle_response = 0.05;
+      this.gimbal_response = 0.02;
       
       this.color = 0xff88cc;
 
