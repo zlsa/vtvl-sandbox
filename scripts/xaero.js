@@ -334,8 +334,11 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       x_offset *= clerp(0, Math.abs(x_offset), 15, 1.5, 1);
       y_offset *= clerp(0, Math.abs(y_offset), 15, 1.5, 1);
       
-      x_offset *= clerp(0, Math.abs(x_offset), 2, 3, 1);
-      y_offset *= clerp(0, Math.abs(y_offset), 2, 3, 1);
+      x_offset *= clerp(0, Math.abs(x_offset), 4, 4, 1);
+      y_offset *= clerp(0, Math.abs(y_offset), 4, 4, 1);
+      
+      x_offset *= clerp(0, Math.abs(x_offset), 2, 5, 1);
+      y_offset *= clerp(0, Math.abs(y_offset), 2, 5, 1);
       
       x_offset *= clerp(0, this.vehicle.engine.get_thrust_fraction(), 1, 1.3, 1);
       y_offset *= clerp(0, this.vehicle.engine.get_thrust_fraction(), 1, 1.3, 1);
@@ -445,7 +448,7 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
         'land-altitude': 10,
         'arrest-accuracy': 1,
 
-        'translate-accuracy': 0.3,
+        'translate-accuracy': 1,
         'touchdown-altitude': 0.05
       };
       
