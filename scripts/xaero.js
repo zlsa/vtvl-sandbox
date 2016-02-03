@@ -419,6 +419,7 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
         'inflight-shutdown',
         'coast',
         'inflight-startup',
+        'arrest',
         'translate',
         'descent',
         'land',
@@ -435,13 +436,16 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
         'liftoff-altitude': 5, // full throttle until this high
         
         'hover-altitude': 50,
-        'hover-time': 20,
+        'hover-time': 10,
         
         'boost-vspeed': 20,
 
+        'coast-time': 2,
+        
         'land-altitude': 10,
+        'arrest-accuracy': 1,
 
-        'translate-distance': 0.3,
+        'translate-accuracy': 0.3,
         'touchdown-altitude': 0.05
       };
       
@@ -454,7 +458,7 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
 
       var state = this.get_state();
 
-      if(state == 'hover' || state == 'translate')
+      if(state == 'hover' || state == 'translate' || state == 'arrest')
         target_altitude = constants['hover-altitude'];
       if(state == 'descent')
         target_altitude = 0;
@@ -506,12 +510,14 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
         this.next_state();
       } else if(measured_vspeed > constants['boost-vspeed'] && state == 'boost') {
         this.next_state();
-        this.boost_end = measured_altitude;
-      } else if(measured_altitude < this.boost_end && state == 'coast') {
+        this.coast_start = this.time;
+      } else if(elapsed(this.time, this.coast_start) > constants['coast-time'] && state == 'coast') {
+        this.next_state();
+      } else if(Math.abs(target_altitude - measured_altitude) < constants['arrest-accuracy'] && state == 'arrest') {
+        this.next_state();
+      } else if(distance < constants['translate-accuracy'] && state == 'translate') {
         this.next_state();
       } else if(measured_altitude < constants['land-altitude'] && state == 'descent') {
-        this.next_state();
-      } else if(distance < constants['translate-distance'] && state == 'translate') {
         this.next_state();
       } else if(measured_altitude < constants['touchdown-altitude'] && state == 'land') {
         this.next_state();
