@@ -98,7 +98,7 @@ var Renderer = Fiber.extend(function() {
 
     tick: function(elapsed) {
       var distance = this.camera.object.position.distanceTo(this.game.vehicles[0].object.position);
-      var size = 20;
+      var size = 10;
       var fov = degrees(Math.atan2(size, distance));
 
       fov = clamp(3, fov);

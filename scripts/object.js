@@ -11,6 +11,17 @@ var Obj = Fiber.extend(function() {
       this.init_render();
     },
 
+    remove: function() {
+      var scene = this.game.get_render_scene();
+      var world = this.game.get_physics_world();
+      scene.remove(this.object);
+
+      this.object.remove(this.mesh);
+
+      if(this.body)
+        world.remove(this.body);
+    },
+
     init_render: function() {
       this.object = new THREE.Object3D();
       

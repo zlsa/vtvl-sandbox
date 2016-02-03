@@ -67,6 +67,12 @@ var ScimitarEngine = BipropEngine.extend(function(base) {
       this.ratio = 1.7;
     },
 
+    remove: function() {
+      this.sound.remove();
+      
+      base.remove.call(this);
+    },
+
     init_physics: function() {
       this.shape = new CANNON.Cylinder(0.2, 0.1, 0.3, 12);
       
@@ -150,6 +156,13 @@ var XaeroVehicle = Vehicle.extend(function(base) {
       this.shadow.shadowCameraFov = 0.3;
     },
 
+    remove: function() {
+      this.fuel_tank.remove();
+      this.oxidizer_tank.remove();
+
+      base.remove.call(this);
+    },
+
     get_mass: function() {
       return base.get_mass.call(this) + this.fuel_tank.get_mass() + this.oxidizer_tank.get_mass();
     },
@@ -177,7 +190,7 @@ var XaeroVehicle = Vehicle.extend(function(base) {
       this.body.addShape(body, new CANNON.Vec3(0, 0, 0.0), new CANNON.Quaternion());
       this.body.addShape(legs, new CANNON.Vec3(0, 0, -2.3 + leg_height/2), new CANNON.Quaternion());
       
-      this.body.position.set(0, 0, 2.5);
+      this.body.position.set(0, 0, 3);
     },
 
     loaded: function(geometry, materials) {
@@ -337,11 +350,13 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
     tick_info: function() {
       var measured_altitude = this.vehicle.get_altitude() - this.rest_altitude + 0.01;
       
+      $('#info .fps').text(Math.round(fps));
       $('#info .state').text(this.get_state());
       $('#info .altitude').text(measured_altitude.toFixed(2) + 'm');
+      $('#info .thrust').text(Math.round(this.vehicle.engine.get_thrust_fraction() * 100) + '%');
       $('#info .mass').text(this.vehicle.get_mass().toFixed(2) + 'kg');
-      $('#info .fuel-percent').text((this.vehicle.fuel_tank.get_fraction() * 100).toFixed(2) + '%');
-      $('#info .oxidizer-percent').text((this.vehicle.oxidizer_tank.get_fraction() * 100).toFixed(2) + '%');
+      $('#info .fuel-percent').text(this.vehicle.fuel_tank.get_amount().toFixed(2) + 'kg');
+      $('#info .oxidizer-percent').text(this.vehicle.oxidizer_tank.get_amount().toFixed(2) + 'kg');
     },
     
     tick_autopilot: function() {

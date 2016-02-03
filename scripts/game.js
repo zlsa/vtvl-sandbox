@@ -24,12 +24,8 @@ var Game = Fiber.extend(function() {
 
       this.vehicles = [];
 
-      var v = new XaeroVehicle(this);
-//      v.autopilot = new XaeroTranslateAutopilot(this, v);
-//      v.autopilot = new XaeroHoverAutopilot(this, v);
-      v.autopilot = new XaeroInflightRestartAutopilot(this, v);
-      this.add_vehicle(v);
-
+      this.reset();
+      
       var game = this;
       
       $(window).blur(function() {
@@ -41,6 +37,21 @@ var Game = Fiber.extend(function() {
         game.focus = true;
         game.sound.tick();
       });
+    },
+
+    reset: function() {
+      for(var i=0; i<this.vehicles.length; i++) {
+        this.vehicles[i].remove();
+        delete this.vehicles[i];
+      }
+      this.vehicles = [];
+
+      this.time = 0;
+      
+      var v = new XaeroVehicle(this);
+      v.autopilot = new XaeroInflightRestartAutopilot(this, v);
+      this.add_vehicle(v);
+
     },
 
     add_vehicle: function(vehicle) {

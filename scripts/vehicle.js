@@ -13,6 +13,12 @@ var Vehicle = Obj.extend(function(base) {
       this.body.position.set(x, y, z);
     },
 
+    remove: function() {
+      this.engine.remove();
+
+      base.remove.call(this);
+    },
+
     // data
 
     get_position: function() {

@@ -56,6 +56,10 @@ var Sound = Fiber.extend(function() {
       this.load();
     },
 
+    remove: function() {
+      this.panner.disconnect(this.env.context.destination);
+    },
+
     load: function() {
       var sound = this;
       this.game.get_loader().load_sound(this.url, this.env, function(buffer, callback) {

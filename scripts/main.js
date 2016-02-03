@@ -1,6 +1,7 @@
 
 var game;
 var last_tick = 0;
+var fps = 20;
 
 $(document).ready(function() {
   init();
@@ -37,11 +38,15 @@ function tick() {
   if(last_tick != 0)
     elapsed = now - last_tick;
   
-  elapsed = clamp(0, elapsed, 0.1);
+  elapsed = clamp(0, elapsed, 0.03);
   
   game.tick(elapsed);
 
   requestAnimationFrame(tick);
+
+  elapsed = clamp(0.001, elapsed);
+  var current_fps = 1 / elapsed;
+  fps += (current_fps - fps) / (0.2 / elapsed);
 
   last_tick = now;
 }

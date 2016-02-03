@@ -27,6 +27,13 @@ var Engine = Obj.extend(function(base) {
       this.init_light();
     },
 
+    remove: function() {
+      this.object.remove(this.light);
+      this.mesh.remove(this.particle.group.mesh);
+      
+      base.remove.call(this);
+    },
+
     get_isp: function() {
       return this.isp[0];
     },
@@ -95,6 +102,10 @@ var Engine = Obj.extend(function(base) {
 
     get_thrust: function() {
       return this.max_thrust * this.throttle;
+    },
+
+    get_thrust_fraction: function() {
+      return this.get_thrust() / this.max_thrust;
     },
 
     get_physics_thrust: function() {

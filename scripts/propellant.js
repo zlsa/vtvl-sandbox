@@ -25,6 +25,10 @@ var PropellantTank = Obj.extend(function(base) {
       return this.amount / this.capacity;
     },
 
+    get_amount: function() {
+      return this.amount;
+    },
+
     get_mass: function() {
       return this.dry_mass + this.amount;
     },
