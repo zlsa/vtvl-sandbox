@@ -302,7 +302,7 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       this.altitude_pid.set_measure(measured_altitude);
 
       var target_vspeed = this.altitude_pid.get()
-      target_vspeed *= clerp(-10, target_vspeed, 0, 0.5, 1);
+      target_vspeed *= clerp(-20, target_vspeed, 0, 0.15, 1);
 
       this.vspeed_pid.set_target(target_vspeed);
       this.vspeed_pid.set_measure(measured_vspeed);
@@ -334,11 +334,11 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       x_offset *= clerp(0, Math.abs(x_offset), 15, 1.5, 1);
       y_offset *= clerp(0, Math.abs(y_offset), 15, 1.5, 1);
       
-      x_offset *= clerp(0, Math.abs(x_offset), 4, 4, 1);
-      y_offset *= clerp(0, Math.abs(y_offset), 4, 4, 1);
+      x_offset *= clerp(0, Math.abs(x_offset), 4, 2, 1);
+      y_offset *= clerp(0, Math.abs(y_offset), 4, 2, 1);
       
-      x_offset *= clerp(0, Math.abs(x_offset), 2, 5, 1);
-      y_offset *= clerp(0, Math.abs(y_offset), 2, 5, 1);
+      x_offset *= clerp(0, Math.abs(x_offset), 2, 3, 1);
+      y_offset *= clerp(0, Math.abs(y_offset), 2, 3, 1);
       
       x_offset *= clerp(0, this.vehicle.engine.get_thrust_fraction(), 1, 1.3, 1);
       y_offset *= clerp(0, this.vehicle.engine.get_thrust_fraction(), 1, 1.3, 1);
@@ -441,9 +441,9 @@ var XaeroInflightRestartAutopilot = XaeroAutopilot.extend(function(base) {
         'hover-altitude': 50,
         'hover-time': 10,
         
-        'boost-vspeed': 20,
+        'boost-vspeed': 25,
 
-        'coast-time': 2,
+        'coast-time': 4,
         
         'land-altitude': 10,
         'arrest-accuracy': 1,
