@@ -16,12 +16,34 @@ var Vehicle = Obj.extend(function(base) {
 
     // data
 
+    get_position: function() {
+      return this.object.position;
+    },
+
+    get_crossrange: function() {
+      var p = this.get_position();
+      return new THREE.Vector2(p.x, p.y);
+    },
+
     get_altitude: function() {
       return this.body.position.z;
     },
 
     get_vspeed: function() {
       return this.body.velocity.z;
+    },
+
+    get_hspeed: function() {
+      return new THREE.Vector2(this.body.velocity.x, this.body.velocity.y);
+    },
+
+    get_orientation: function() {
+      return new THREE.Quaternion().copy(this.body.quaternion);
+    },
+
+    get_angular_velocity: function() {
+      var av = this.body.angularVelocity;
+      return new THREE.Euler(av.x, av.y, av.z, 'XYZ');
     },
 
     init_camera: function() {

@@ -24,7 +24,7 @@ var PerspectiveCamera = Obj.extend(function(base) {
       var position = get_global_position(this.camera);
       this.game.get_sound().set_position(position);
       
-      var orientation = new THREE.Vector3(0, 1, 0);
+      var orientation = new THREE.Vector3(0, 0, 1);
       orientation.applyQuaternion(this.camera.quaternion);
       
       this.game.get_sound().set_orientation(orientation, new THREE.Vector3(0, 0, 1));

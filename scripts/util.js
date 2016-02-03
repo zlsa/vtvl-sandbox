@@ -39,3 +39,22 @@ function get_global_position(obj) {
   vec.applyMatrix4(obj.matrixWorld);
   return vec;
 }
+
+function distance_2d(x, y) {
+  return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+}
+
+function vector3_to_quat(vec, order) {
+  var euler = new THREE.Euler().setFromVector3(vec, 'XYZ');
+  return new THREE.Quaternion().setFromEuler(euler);
+}
+
+function log_array(arr) {
+  var out = ''
+  for(var i=0; i<arr.length; i++) {
+    out += arr[i].toFixed(3);
+    if(i < arr.length - 1)
+      out += ', ';
+  }
+  console.log(out);
+}
