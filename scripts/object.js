@@ -48,7 +48,8 @@ var Obj = Fiber.extend(function() {
     },
 
     done: function() {
-      this.game.get_physics_world().add(this.body);
+      if(this.body)
+        this.game.get_physics_world().add(this.body);
       this.game.get_render_scene().add(this.object);
 
       if(this.shadow) {

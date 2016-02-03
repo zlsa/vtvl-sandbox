@@ -27,6 +27,10 @@ var Engine = Obj.extend(function(base) {
       this.init_light();
     },
 
+    get_isp: function() {
+      return this.isp[0];
+    },
+
     init_light: function() {
       this.light = new THREE.PointLight(this.color, 1, 150);
       this.light.position.set(0, 0, -0.5);
@@ -73,7 +77,6 @@ var Engine = Obj.extend(function(base) {
       for(var i=0; i<this.constraint.equations.length; i++){
         this.constraint.equations[i].setSpookParams(1e30, 0.5, 0.02);
       }
-      window.constraint = this.constraint;
       
       this.constraint.collideConnected = false;
       this.world.world.addConstraint(this.constraint);
@@ -175,209 +178,41 @@ var Engine = Obj.extend(function(base) {
   }
 });
 
-var BE3Engine = Engine.extend(function(base) {
+var BipropEngine = Engine.extend(function(base) {
   return {
 
-    init: function(game) {
-      this.model_url = 'vehicles/new-shepard/be-3.json';
-
-      this.color = 0xffaa44;
-
-      this.mass = 100;
-      
-      this.throttle_range = [0.4, 1];
-      
-      this.max_thrust = 490000;
-      this.max_gimbal = radians(5);
-      
-      this.restarts = 3;
-
-      this.sound = new Sound(game, 'vehicles/xaero/audio/running.wav');
-
+    init: function(game, fuel_tank, oxidizer_tank) {
       base.init.apply(this, arguments);
-    },
 
-    init_physics: function() {
-      this.shape = new CANNON.Cylinder(0.5, 0.1, 1.5, 12);
-      
-      base.init_physics.call(this);
-    },
-
-    init_particles: function() {
-      this.particle = {}
-      
-      this.particle.group = new SPE.Group({
-        texture: {
-          value: this.flame
-        },
-        hasPerspective: true,
-        maxParticleCount: 4000
-      });
-
-      var size = 0.4;
-
-      this.particle.emitter = new SPE.Emitter({
-        maxAge: {
-          value: 0.3,
-          spread: 0.03
-        },
-        position: {
-          value: new THREE.Vector3(0, -0.6, 0),
-          spread: new THREE.Vector3(size, size, size)
-        },
-
-        acceleration: {
-          value: new THREE.Vector3(0, 10, 0),
-          spread: new THREE.Vector3(0, 0, 0)
-        },
-
-        velocity: {
-          value: new THREE.Vector3(0, -120, 0),
-          spread: new THREE.Vector3(10, 30, 10)
-        },
-
-        color: {
-          value: [ new THREE.Color(0xff88aa), new THREE.Color(0x882266) ]
-        },
-
-        opacity: {
-          value: [0.01, 0.03, 0.005, 0.001, 0.0002, 0]
-        },
+      this.ratio = 1;
         
-        size: {
-          value: [2, 5.0, 10.0],
-          spread: 1
-        },
-
-        particleCount: 3000,
-      });
-
-      this.particle.group.addEmitter(this.particle.emitter);
+      this.fuel_tank = fuel_tank;
+      this.oxidizer_tank = oxidizer_tank;
     },
 
-    add_to_vehicle: function(vehicle, position) {
-      this.position = position;
-      
-      this.vehicle = vehicle;
-      
-      this.body.position = position;
-      this.body.position.vadd(vehicle.body.position, this.body.position);
-      
-      this.constraint = new CANNON.LockConstraint(this.body, vehicle.body, {
-        maxForce: 1e50
-      });
-
-      for(var i=0; i<this.constraint.equations.length; i++){
-        this.constraint.equations[i].setSpookParams(1e30, 0.5, 0.02);
-      }
-      window.constraint = this.constraint;
-      
-      this.constraint.collideConnected = false;
-      this.world.world.addConstraint(this.constraint);
+    has_propellant: function() {
+      return this.fuel_tank.has_propellant() && this.oxidizer_tank.has_propellant();
     },
 
-    loaded: function(geometry, materials) {
-      var material = new THREE.MeshPhongMaterial({
-        color: 0x222222
-      });
-      this.mesh = new THREE.Mesh(geometry, material);
-      this.mesh.castShadow = true;
-      this.mesh.receiveShadow = true;
-
-      this.object.add(this.mesh);
+    is_running: function() {
+      return base.is_running.call(this) && this.has_propellant();
     },
 
-  }
-});
-
-var ScimitarEngine = Engine.extend(function(base) {
-  return {
-
-    init: function(game) {
-      this.model_url = 'vehicles/xaero/scimitar.json';
-
-      this.throttle_response = 0.05;
-      this.gimbal_response = 0.02;
+    update_propellant_flow: function() {
+      var total_flow = this.get_thrust() / (9.81 * this.get_isp());
       
-      this.color = 0xff88cc;
+      var fuel_flow = total_flow / (1 + this.ratio);
+      var oxidizer_flow = fuel_flow * this.ratio;
 
-      this.mass = 15;
-      
-      this.throttle_range = [0.1, 1];
-      
-      this.max_thrust = 5300;
-      this.max_gimbal = radians(5);
-      
-      this.restarts = 3;
-
-      this.sound = new Sound(game, 'vehicles/xaero/audio/running.wav');
-
-      base.init.apply(this, arguments);
+      this.fuel_tank.add_flow(fuel_flow);
+      this.oxidizer_tank.add_flow(oxidizer_flow);
     },
 
-    init_physics: function() {
-      this.shape = new CANNON.Cylinder(0.2, 0.1, 0.3, 12);
+    tick: function(elapsed) {
+      base.tick.call(this, elapsed);
       
-      base.init_physics.call(this);
-    },
-
-    init_particles: function() {
-      this.particle = {}
-      
-      this.particle.group = new SPE.Group({
-        texture: {
-          value: this.flame
-        },
-        hasPerspective: true,
-        maxParticleCount: 4000
-      });
-
-      var size = 0.01;
-
-      this.particle.emitter = new SPE.Emitter({
-        maxAge: {
-          value: 0.03,
-          spread: 0.04
-        },
-        position: {
-          value: new THREE.Vector3(0, -0.1, 0),
-          spread: new THREE.Vector3(size, size, size)
-        },
-
-        velocity: {
-          value: new THREE.Vector3(0, -100, 0),
-          spread: new THREE.Vector3(1, 10, 1)
-        },
-
-        color: {
-          value: [ new THREE.Color(0xff44cc), new THREE.Color(0x882266) ]
-        },
-
-        opacity: {
-          value: [0.5, 0.08, 0.02, 0]
-        },
-        
-        size: {
-          value: [0.3, 3.0],
-          spread: 0.3
-        },
-
-        particleCount: 3000,
-      });
-
-      this.particle.group.addEmitter(this.particle.emitter);
-    },
-
-    loaded: function(geometry, materials) {
-      var material = new THREE.MeshPhongMaterial({
-        color: 0x222222
-      });
-      this.mesh = new THREE.Mesh(geometry, material);
-      this.mesh.castShadow = true;
-      this.mesh.receiveShadow = true;
-
-      this.object.add(this.mesh);
-    },
+      this.update_propellant_flow();
+    }
 
   }
 });

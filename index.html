@@ -26,8 +26,11 @@
     
     <script src="scripts/autopilot.js"></script>
     
+    <script src="scripts/propellant.js"></script>
     <script src="scripts/engine.js"></script>
     <script src="scripts/vehicle.js"></script>
+    
+    <script src="scripts/xaero.js"></script>
     
     <script src="scripts/ground.js"></script>
     <script src="scripts/world.js"></script>
@@ -40,7 +43,13 @@
 
     <div id="canvas"></div>
 
-    <div id="state"></div>
+    <ul id="info">
+      <li class="state">loading</li>
+      <li class="altitude">--.-- m</li>
+      <li class="mass">-.- kg</li>
+      <li class="fuel-percent">-- %</li>
+      <li class="oxidizer-percent">-- %</li>
+    </div>
     
   </body>
 </html>

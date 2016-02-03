@@ -58,3 +58,7 @@ function log_array(arr) {
   }
   console.log(out);
 }
+
+function elapsed(now, start) {
+  return (now - start);
+}

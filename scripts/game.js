@@ -25,7 +25,9 @@ var Game = Fiber.extend(function() {
       this.vehicles = [];
 
       var v = new XaeroVehicle(this);
-      v.autopilot = new XaeroAutopilot(this, v);
+//      v.autopilot = new XaeroTranslateAutopilot(this, v);
+//      v.autopilot = new XaeroHoverAutopilot(this, v);
+      v.autopilot = new XaeroInflightRestartAutopilot(this, v);
       this.add_vehicle(v);
 
       var game = this;
