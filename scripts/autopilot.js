@@ -174,8 +174,8 @@ var XaeroAutopilot = Autopilot.extend(function(base) {
       x_offset *= clerp(0, this.throttle, 1, 0.2, 1);
       y_offset *= clerp(0, this.throttle, 1, 0.2, 1);
       
-      this.hspeed_x_pid.set_target(x_offset * 0.2);
-      this.hspeed_y_pid.set_target(y_offset * 0.2);
+      this.hspeed_x_pid.set_target(x_offset * 0.4);
+      this.hspeed_y_pid.set_target(y_offset * 0.4);
       this.hspeed_x_pid.set_measure(hspeed.x);
       this.hspeed_y_pid.set_measure(hspeed.y);
 
