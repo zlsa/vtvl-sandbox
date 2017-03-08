@@ -23,7 +23,7 @@ var SoundEnvironment = Fiber.extend(function() {
     },
 
     set_velocity: function(vel) {
-      this.listener.setVelocity(vel.x, vel.y, vel.z);
+      //this.listener.setVelocity(vel.x, vel.y, vel.z);
     },
 
     set_orientation: function(rot, up) {
@@ -125,7 +125,7 @@ var Sound = Fiber.extend(function() {
 
     set_velocity: function(vel) {
       var fac = 1;
-      this.panner.setVelocity(vel.x * fac, vel.y * fac, vel.z * fac);
+      //this.panner.setVelocity(vel.x * fac, vel.y * fac, vel.z * fac);
     },
 
     set_pitch: function(pitch) {
